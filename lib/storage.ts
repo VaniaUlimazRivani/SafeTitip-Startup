@@ -4,9 +4,10 @@ export interface Booking {
   id: string;
   namaPemesanan: string;
   nomorWA: string;
-  kategoriBarang: string; // Akan diisi dari hasil modul Fauzan
-  totalHarga: number; // Akan diisi dari hasil modul Hasan
-  status: 'Menunggu Dikonfirmasi' | 'Disimpan' | 'Diambil';
+  kategoriBarang: string;
+  totalHarga: number;
+  // Ubah baris status menjadi seperti ini:
+  status: 'MENUNGGU VERIFIKASI' | 'TERVERIFIKASI' | 'DITOLAK'; 
   tanggalDibuat: string;
 }
 
@@ -31,7 +32,7 @@ export const saveBooking = (newData: Omit<Booking, 'id' | 'status' | 'tanggalDib
   const newBooking: Booking = {
     ...newData,
     id: `ST-${Date.now()}`, // Format ID profesional: ST-1698765432
-    status: 'Menunggu Dikonfirmasi',
+    status: 'MENUNGGU VERIFIKASI',
     tanggalDibuat: new Date().toISOString(),
   };
   
