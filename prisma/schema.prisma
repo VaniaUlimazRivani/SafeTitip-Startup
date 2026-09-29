@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  nama      String
+  noWa      String    @map("no_wa")
+  persona   String?
+  alamat    String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  bookings  Booking[]
+
+  @@map("users")
+}
+
+model Booking {
+  id              Int              @id @default(autoincrement())
+  kodeBooking     String           @unique @map("kode_booking")
+  userId          Int              @map("user_id")
+  kategori        String           // A, B, CUSTOM
+  durasiBulan     Int              @map("durasi_bulan")
+  totalHarga      Int              @map("total_harga")
+  status          String           @default("LEAD")
+  tanggalPickup   DateTime?        @map("tanggal_pickup")
+  lokasiPickup    String?          @map("lokasi_pickup") @db.Text
+  adminId         Int?             @map("admin_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id])
+  admin           AdminUser?       @relation(fields: [adminId], references: [id])
+  items           BookingItem[]
+  quotation       Quotation?
+  conditionReport ConditionReport?
+  weeklyUpdates   WeeklyUpdate[]
+  agreement       Agreement?
+  statusLogs      StatusLog[]
+
+  @@map("bookings")
+}
+
+model BookingItem {
+  id         Int      @id @default(autoincrement())
+  bookingId  Int      @map("booking_id")
+  namaBarang String   @map("nama_barang")
+  tipe       String   // KECIL, ELEKTRONIK_KECIL, BESAR, ELEKTRONIK_BESAR, KENDARAAN
+  jumlah     Int      @default(1)
+  catatan    String?  @db.Text
+
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+
+  @@map("booking_items")
+}
+
+model Quotation {
+  id            Int       @id @default(autoincrement())
+  bookingId     Int       @unique @map("booking_id")
+  kategori      String
+  hargaPerBulan Int       @map("harga_per_bulan")
+  totalHarga    Int       @map("total_harga")
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  isCustom      Boolean   @default(false) @map("is_custom")
+  catatanCustom String?   @map("catatan_custom") @db.Text
+  approvedAt    DateTime? @map("approved_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  booking       Booking   @relation(fields: [bookingId], references: [id])
+
+  @@map("quotations")
+}
+
+model ConditionReport {
+  id            Int                    @id @default(autoincrement())
+  bookingId     Int                    @unique @map("booking_id")
+  status        String                 @default("MENUNGGU_VERIFIKASI")
+  picKurir      String?                @map("pic_kurir")
+  tanggalPickup DateTime?              @map("tanggal_pickup")
+  fotoBefore    String?                @map("foto_before") @db.Text
+  fotoAfter     String?                @map("foto_after") @db.Text
+  fotoWrapping  String?                @map("foto_wrapping") @db.Text
+  userApproved  Boolean                @default(false) @map("user_approved")
+  approvedAt    DateTime?              @map("approved_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+
+  booking       Booking                @relation(fields: [bookingId], references: [id])
+  items         ConditionReportItem[]
+
+  @@map("condition_reports")
+}
+
+model ConditionReportItem {
+  id                Int             @id @default(autoincrement())
+  conditionReportId Int             @map("condition_report_id")
+  namaBarang        String          @map("nama_barang")
+  kondisiAwal       String          @map("kondisi_awal") // BAIK, ADA_CACAT
+  catatanCacat      String?         @map("catatan_cacat") @db.Text
+  fotoBefore        String?         @map("foto_before") @db.Text
+
+  conditionReport   ConditionReport @relation(fields: [conditionReportId], references: [id])
+
+  @@map("condition_report_items")
+}
+
+model WeeklyUpdate {
+  id            Int        @id @default(autoincrement())
+  bookingId     Int        @map("booking_id")
+  mingguKe      Int        @map("minggu_ke")
+  tanggalUpdate DateTime   @map("tanggal_update")
+  foto          String?    @db.Text
+  keterangan    String?    @db.Text
+  dikirimVia    String     @default("WHATSAPP") @map("dikirim_via")
+  adminId       Int?       @map("admin_id")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  booking       Booking    @relation(fields: [bookingId], references: [id])
+  admin         AdminUser? @relation(fields: [adminId], references: [id])
+
+  @@map("weekly_updates")
+}
+
+model Agreement {
+  id         Int       @id @default(autoincrement())
+  bookingId  Int       @unique @map("booking_id")
+  status     String    @default("DRAFT") // DRAFT, SIGNED, CANCELLED
+  bermaterai Boolean   @default(false)
+  tanggalTtd DateTime? @map("tanggal_ttd")
+  fileUrl    String?   @map("file_url") @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  booking    Booking   @relation(fields: [bookingId], references: [id])
+
+  @@map("agreements")
+}
+
+model StatusLog {
+  id         Int      @id @default(autoincrement())
+  bookingId  Int      @map("booking_id")
+  statusLama String?  @map("status_lama")
+  statusBaru String   @map("status_baru")
+  diubahOleh String   @map("diubah_oleh")
+  catatan    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+
+  @@map("status_logs")
+}
+
+model AdminUser {
+  id            Int            @id @default(autoincrement())
+  nama          String
+  role          String         // ADMIN, KURIR, OBSERVER, ESCALATION
+  noWa          String         @map("no_wa")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  bookings      Booking[]
+  weeklyUpdates WeeklyUpdate[]
+
+  @@map("admin_users")
+}
