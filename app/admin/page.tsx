@@ -72,8 +72,13 @@ export default function AdminDashboard() {
             <div className="h-6 w-px bg-slate-700"></div>
             <h1 className="text-xl font-bold text-white tracking-tight">Admin Dashboard</h1>
           </div>
-          <div className="text-sm px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
-            Internal System
+          <div className="flex items-center gap-3">
+            <Link href="/klasifikasi" className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 transition-colors">
+              🔍 Engine Klasifikasi
+            </Link>
+            <div className="text-sm px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
+              Internal System
+            </div>
           </div>
         </div>
       </nav>
