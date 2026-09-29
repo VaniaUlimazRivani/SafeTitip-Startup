@@ -77,9 +77,14 @@ export default function Home() {
         <div className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
           SafeTitip.
         </div>
-        <Link href="/admin" className="px-5 py-2 rounded-full border border-blue-400/30 hover:bg-blue-500/10 transition-all text-sm font-medium text-blue-200">
-          Admin Login &rarr;
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/kalkulator-harga" className="text-sm font-semibold text-cyan-300 hover:text-white transition-colors flex items-center gap-1.5 bg-blue-500/10 px-3.5 py-1.5 rounded-full border border-blue-400/30">
+            📊 Kalkulator Harga
+          </Link>
+          <Link href="/admin" className="px-5 py-2 rounded-full border border-blue-400/30 hover:bg-blue-500/10 transition-all text-sm font-medium text-blue-200">
+            Admin Login &rarr;
+          </Link>
+        </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 pb-24 pt-12 grid lg:grid-cols-2 gap-12 items-start">
@@ -239,6 +244,29 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Quotation Calculator Banner CTA */}
+      <section className="max-w-7xl mx-auto px-6 pb-20">
+        <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-blue-900/60 via-cyan-900/40 to-slate-900/60 p-8 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
+              ⚡ Simulasi Biaya Transparan
+            </span>
+            <h3 className="text-2xl md:text-3xl font-extrabold text-white">
+              Cek Estimasi Harga Tanpa Biaya Tersembunyi
+            </h3>
+            <p className="text-slate-300 text-sm mt-1 max-w-xl">
+              Gunakan Kalkulator Harga resmi SafeTitip untuk menghitung pengeluaran kardus standar & barang elektronik kos Anda secara transparan.
+            </p>
+          </div>
+          <Link
+            href="/kalkulator-harga"
+            className="shrink-0 px-8 py-4 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-extrabold rounded-2xl shadow-xl shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95"
+          >
+            Buka Kalkulator Harga &rarr;
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
