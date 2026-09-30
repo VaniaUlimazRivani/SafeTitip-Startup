@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { klasifikasiBarang } from '@/lib/services/klasifikasiService';
 import { hitungQuotation } from '@/lib/services/quotationService';
 import { bookingSchema } from '@/lib/validators/bookingValidator';
-import { generateKodeBooking } from '@/lib/utils/kodeBooking';
+import { getAllBookings, createNewBooking } from '@/lib/repository/bookingRepo';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,42 +23,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: klasifikasi.alasan }, { status: 422 });
     }
 
-    const user = await prisma.user.create({
-      data: {
+    if (klasifikasi.kategori === 'CUSTOM') {
+      const booking = await createNewBooking({
         nama: data.nama,
         noWa: data.noWa,
         persona: data.persona,
         alamat: data.alamat,
-      },
-    });
-
-    if (klasifikasi.kategori === 'CUSTOM') {
-      const booking = await prisma.booking.create({
-        data: {
-          kodeBooking: generateKodeBooking(),
-          userId: user.id,
-          kategori: 'CUSTOM',
-          durasiBulan: data.durasiBulan,
+        lokasiPickup: data.lokasiPickup,
+        tanggalPickup: data.tanggalPickup,
+        durasiBulan: data.durasiBulan,
+        kategori: 'CUSTOM',
+        totalHarga: 0,
+        status: 'LEAD',
+        items: data.items,
+        quotation: {
+          hargaPerBulan: 0,
           totalHarga: 0,
-          status: 'LEAD',
-          tanggalPickup: new Date(data.tanggalPickup),
-          lokasiPickup: data.lokasiPickup,
-          items: {
-            create: data.items.map((i: any) => ({
-              namaBarang: i.nama,
-              tipe: 'CUSTOM',
-              jumlah: i.jumlah,
-            })),
-          },
-          statusLogs: {
-            create: {
-              statusBaru: 'LEAD',
-              diubahOleh: 'SYSTEM',
-              catatan: 'Booking CUSTOM, tunggu admin',
-            },
-          },
+          isCustom: true,
         },
       });
+
       return NextResponse.json(
         { message: 'Booking CUSTOM - admin akan follow-up', booking, klasifikasi },
         { status: 201 }
@@ -71,44 +54,22 @@ export async function POST(req: NextRequest) {
       data.durasiBulan
     )!;
 
-    const booking = await prisma.booking.create({
-      data: {
-        kodeBooking: generateKodeBooking(),
-        userId: user.id,
-        kategori: klasifikasi.kategori,
-        durasiBulan: data.durasiBulan,
+    const booking = await createNewBooking({
+      nama: data.nama,
+      noWa: data.noWa,
+      persona: data.persona,
+      alamat: data.alamat,
+      lokasiPickup: data.lokasiPickup,
+      tanggalPickup: data.tanggalPickup,
+      durasiBulan: data.durasiBulan,
+      kategori: klasifikasi.kategori,
+      totalHarga: quotation.totalHarga,
+      status: 'APPROVED',
+      items: data.items,
+      quotation: {
+        hargaPerBulan: quotation.hargaPerBulan,
         totalHarga: quotation.totalHarga,
-        status: 'APPROVED',
-        tanggalPickup: new Date(data.tanggalPickup),
-        lokasiPickup: data.lokasiPickup,
-        items: {
-          create: data.items.map((i: any) => ({
-            namaBarang: i.nama,
-            tipe: 'KECIL',
-            jumlah: i.jumlah,
-          })),
-        },
-        quotation: {
-          create: {
-            kategori: klasifikasi.kategori,
-            hargaPerBulan: quotation.hargaPerBulan,
-            totalHarga: quotation.totalHarga,
-            status: 'APPROVED',
-            approvedAt: new Date(),
-          },
-        },
-        statusLogs: {
-          create: {
-            statusBaru: 'APPROVED',
-            diubahOleh: 'SYSTEM',
-            catatan: 'Booking dibuat via form',
-          },
-        },
-      },
-      include: {
-        user: true,
-        items: true,
-        quotation: true,
+        isCustom: false,
       },
     });
 
@@ -122,14 +83,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const bookings = await prisma.booking.findMany({
-    include: {
-      user: true,
-      items: true,
-      quotation: true,
-      conditionReport: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-  return NextResponse.json(bookings);
+  try {
+    const bookings = await getAllBookings();
+    return NextResponse.json(bookings);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

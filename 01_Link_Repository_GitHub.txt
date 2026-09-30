@@ -1,0 +1,2 @@
+https://github.com/VaniaUlimazRivani/SafeTitip-Startup.git
+Branch Utama: main (dapat dijalankan langsung)
