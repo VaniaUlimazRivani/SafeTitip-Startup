@@ -371,7 +371,7 @@ export default function Home() {
       <section id="beranda" className="relative pt-12 pb-20 overflow-hidden bg-gradient-to-b from-white via-blue-50/30 to-slate-50 border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
+
             <div className="lg:col-span-7 space-y-6">
               {/* Badge Status */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200 shadow-xs">
@@ -384,7 +384,7 @@ export default function Home() {
               </h1>
 
               <p className="text-lg text-slate-600 leading-relaxed max-w-2xl">
-                Solusi cerdas bagi mahasiswa saat mudik liburan semester. Layanan jemput langsung ke kamar kos, 
+                Solusi cerdas bagi mahasiswa saat mudik liburan semester. Layanan jemput langsung ke kamar kos,
                 pengecekan kondisi foto & video, serta disimpan di gudang aman terjamin garansi.
               </p>
 
@@ -622,11 +622,10 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setCalcKategori('A')}
-                      className={`p-4 rounded-2xl border text-left transition-all ${
-                        calcKategori === 'A'
+                      className={`p-4 rounded-2xl border text-left transition-all ${calcKategori === 'A'
                           ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20'
                           : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-sm text-slate-900">Kategori A</p>
                       <p className="text-xs text-slate-500 mt-0.5">Dus buku / Pakaian / ≤ 3 item</p>
@@ -634,11 +633,10 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setCalcKategori('B')}
-                      className={`p-4 rounded-2xl border text-left transition-all ${
-                        calcKategori === 'B'
+                      className={`p-4 rounded-2xl border text-left transition-all ${calcKategori === 'B'
                           ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20'
                           : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-sm text-slate-900">Kategori B</p>
                       <p className="text-xs text-slate-500 mt-0.5">Kulkas / Kasur / 4–7 item</p>
@@ -657,11 +655,10 @@ export default function Home() {
                         key={bln}
                         type="button"
                         onClick={() => setCalcDurasi(bln)}
-                        className={`py-3 rounded-xl border text-sm font-bold transition-all ${
-                          calcDurasi === bln
+                        className={`py-3 rounded-xl border text-sm font-bold transition-all ${calcDurasi === bln
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
+                          }`}
                       >
                         {bln} Bulan
                       </button>
@@ -718,7 +715,7 @@ export default function Home() {
       {/* ========================================================================= */}
       <section id="booking-form" className="py-20 bg-slate-100/60 scroll-mt-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          
+
           <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
             <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-sm">
               <span className="material-symbols-outlined text-[16px]">edit_note</span>
@@ -733,7 +730,7 @@ export default function Home() {
           </div>
 
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
-            
+
             {/* TAMPILAN JIKA BOOKING SUKSES TERKIRIM */}
             {result ? (
               <div className="p-8 sm:p-12 text-center space-y-6">
@@ -832,7 +829,7 @@ export default function Home() {
             ) : (
               /* FORMULIR UTAMA */
               <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
-                
+
                 {/* Alert Error jika validasi gagal */}
                 {error && (
                   <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
@@ -1080,11 +1077,10 @@ export default function Home() {
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hasil Klasifikasi:</span>
                             <span
-                              className={`text-xs font-extrabold px-2.5 py-0.5 rounded-md ${
-                                liveClassification.kategori === 'A'
+                              className={`text-xs font-extrabold px-2.5 py-0.5 rounded-md ${liveClassification.kategori === 'A'
                                   ? 'bg-blue-100 text-blue-800 border border-blue-200'
                                   : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                              }`}
+                                }`}
                             >
                               Kategori {liveClassification.kategori}
                             </span>
