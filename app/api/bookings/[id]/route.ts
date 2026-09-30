@@ -1,25 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { getBookingById } from '@/lib/repository/bookingRepo';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const booking = await prisma.booking.findUnique({
-    where: { id: Number(params.id) },
-    include: {
-      user: true,
-      items: true,
-      quotation: true,
-      conditionReport: { include: { items: true } },
-      weeklyUpdates: true,
-      agreement: true,
-      statusLogs: { orderBy: { createdAt: 'asc' } },
-    },
-  });
+  try {
+    const { id } = await params;
+    const booking = await getBookingById(Number(id));
 
-  if (!booking) {
-    return NextResponse.json({ error: 'Booking tidak ditemukan' }, { status: 404 });
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking tidak ditemukan' }, { status: 404 });
+    }
+    return NextResponse.json(booking);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  return NextResponse.json(booking);
 }

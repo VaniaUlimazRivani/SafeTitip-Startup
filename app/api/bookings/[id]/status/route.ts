@@ -1,45 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { statusBerikutnya } from '@/lib/constants/status';
+import { getBookingById, updateStatusBooking } from '@/lib/repository/bookingRepo';
+import { STATUS_FLOW } from '@/lib/constants/status';
+
+const ALLOWED_STATUSES = [...STATUS_FLOW, 'DISPUTE', 'MENUNGGU', 'DIKONFIRMASI', 'SELESAI'];
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { status, catatan } = await req.json();
-    const bookingId = Number(params.id);
+    const bookingId = Number(id);
 
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-    });
-
+    const booking = await getBookingById(bookingId);
     if (!booking) {
       return NextResponse.json({ error: 'Booking tidak ditemukan' }, { status: 404 });
     }
 
-    const next = statusBerikutnya(booking.status);
-    if (next !== status && status !== 'DISPUTE') {
+    // Normalisasi status jika dikirim dalam istilah bahasa Indonesia
+    let normalizedStatus = status;
+    if (status === 'MENUNGGU') normalizedStatus = 'LEAD';
+    if (status === 'DIKONFIRMASI') normalizedStatus = 'APPROVED';
+    if (status === 'SELESAI') normalizedStatus = 'CLOSED';
+
+    if (!ALLOWED_STATUSES.includes(normalizedStatus) && !ALLOWED_STATUSES.includes(status)) {
       return NextResponse.json(
-        { error: `Status harus ${next} atau DISPUTE` },
+        { error: `Status ${status} tidak valid` },
         { status: 400 }
       );
     }
 
-    const updated = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        status,
-        statusLogs: {
-          create: {
-            statusLama: booking.status,
-            statusBaru: status,
-            diubahOleh: 'ADMIN',
-            catatan,
-          },
-        },
-      },
-    });
+    const updated = await updateStatusBooking(
+      bookingId,
+      normalizedStatus,
+      catatan || `Status diubah menjadi ${normalizedStatus} oleh Admin`
+    );
 
     return NextResponse.json(updated);
   } catch (error: any) {

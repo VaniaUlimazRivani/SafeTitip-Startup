@@ -8,10 +8,18 @@ export const bookingSchema = z.object({
   persona: z.string().optional(),
   alamat: z.string().optional(),
   tanggalPickup: z.string().refine((val) => {
-    const d = new Date(val);
+    // Parse tanggal dengan aman tanpa bias UTC
+    const parts = val.split('T')[0].split('-').map(Number);
+    if (parts.length < 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
+      return false;
+    }
+    const inputDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    inputDate.setHours(0, 0, 0, 0);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return d >= today;
+
+    return inputDate.getTime() >= today.getTime();
   }, 'Tanggal pickup tidak boleh lampau'),
   lokasiPickup: z.string().optional(),
   items: z

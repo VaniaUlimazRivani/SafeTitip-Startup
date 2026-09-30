@@ -1,29 +1,73 @@
-// lib/useBooking.ts
-'use client'; // Wajib ada karena kita menggunakan fitur browser (useEffect/useState)
+// Lib/useBooking.ts
+'use client';
 
-import { useState, useEffect } from 'react';
-import { getBookings, saveBooking, Booking } from './storage';
+import { useState, useEffect, useCallback } from 'react';
+
+export interface Booking {
+  id: number | string;
+  kodeBooking?: string;
+  durasiBulan?: number;
+  totalHarga?: number;
+  status?: string;
+  createdAt?: string;
+  user?: {
+    nama: string;
+    noWa: string;
+    lokasiPickup?: string;
+  };
+  items?: Array<{
+    nama: string;
+    jumlah: number;
+  }>;
+  [key: string]: any;
+}
 
 export const useBooking = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false); // Mencegah Hydration Error
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mengambil data saat aplikasi pertama kali dimuat di browser
-  useEffect(() => {
-    setBookings(getBookings());
-    setIsLoaded(true);
+  const fetchBookings = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/bookings');
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Gagal mengambil data booking');
+    } finally {
+      setLoading(false);
+      setIsLoaded(true);
+    }
   }, []);
 
-  // Fungsi yang akan dipanggil dari tombol "Submit" di UI
-  const tambahBooking = (newData: Omit<Booking, 'id' | 'status' | 'tanggalDibuat'>) => {
-    const saved = saveBooking(newData);
-    setBookings(prev => [...prev, saved]); // Update data di layar secara instan (Real-time feel)
-    return saved;
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  const tambahBooking = async (payload: any) => {
+    const res = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Gagal menyimpan booking');
+    }
+    setBookings((prev) => [data.booking || data, ...prev]);
+    return data;
   };
 
   return {
     bookings,
     tambahBooking,
-    isLoaded
+    isLoaded,
+    loading,
+    error,
+    refresh: fetchBookings,
   };
 };
