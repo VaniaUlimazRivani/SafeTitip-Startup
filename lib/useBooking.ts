@@ -1,29 +1,55 @@
 // lib/useBooking.ts
-'use client'; // Wajib ada karena kita menggunakan fitur browser (useEffect/useState)
+'use client';
 
 import { useState, useEffect } from 'react';
-import { getBookings, saveBooking, Booking } from './storage';
+
+export interface Booking {
+  id?: number | string;
+  kodeBooking?: string;
+  nama?: string;
+  noWa?: string;
+  lokasiPickup?: string;
+  tanggalPickup?: string;
+  durasiBulan?: number;
+  totalHarga?: number;
+  status?: string;
+  items?: any[];
+  [key: string]: any;
+}
 
 export const useBooking = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false); // Mencegah Hydration Error
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Mengambil data saat aplikasi pertama kali dimuat di browser
   useEffect(() => {
-    setBookings(getBookings());
-    setIsLoaded(true);
+    fetch('/api/bookings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setBookings(data);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoaded(true));
   }, []);
 
-  // Fungsi yang akan dipanggil dari tombol "Submit" di UI
-  const tambahBooking = (newData: Omit<Booking, 'id' | 'status' | 'tanggalDibuat'>) => {
-    const saved = saveBooking(newData);
-    setBookings(prev => [...prev, saved]); // Update data di layar secara instan (Real-time feel)
-    return saved;
+  const tambahBooking = async (newData: any) => {
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newData),
+      });
+      const saved = await res.json();
+      setBookings((prev) => [saved.booking || saved, ...prev]);
+      return saved;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   };
 
   return {
     bookings,
     tambahBooking,
-    isLoaded
+    isLoaded,
   };
 };

@@ -18,7 +18,11 @@
         "name": "next"
       }
     ],
+    "forceConsistentCasingInFileNames": false,
+    "types": ["jest", "node"],
     "paths": {
+      "@/lib/*": ["./Lib/*", "./lib/*"],
+      "@/Lib/*": ["./Lib/*"],
       "@/*": ["./*"]
     }
   },

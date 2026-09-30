@@ -1,0 +1,175 @@
+[
+  {
+    "id": 3,
+    "kodeBooking": "STC-3009-434",
+    "userId": 3,
+    "kategori": "A",
+    "durasiBulan": 1,
+    "totalHarga": 199000,
+    "status": "CLOSED",
+    "tanggalPickup": "2026-10-03T00:00:00.000Z",
+    "lokasiPickup": "[lainnya] jlan sudirman no 17 padang ",
+    "createdAt": "2026-09-30T12:23:26.238Z",
+    "updatedAt": "2026-09-30T12:24:03.709Z",
+    "user": {
+      "id": 3,
+      "nama": "hasan ",
+      "noWa": "081234567899",
+      "persona": "Mahasiswa",
+      "alamat": "[lainnya] jlan sudirman no 17 padang "
+    },
+    "items": [
+      {
+        "id": 1,
+        "bookingId": 3,
+        "namaBarang": "magicom",
+        "tipe": "KECIL",
+        "jumlah": 1
+      },
+      {
+        "id": 2,
+        "bookingId": 3,
+        "namaBarang": "perlengkapan makan",
+        "tipe": "KECIL",
+        "jumlah": 1
+      }
+    ],
+    "quotation": {
+      "id": 3,
+      "bookingId": 3,
+      "kategori": "A",
+      "hargaPerBulan": 199000,
+      "totalHarga": 199000,
+      "status": "APPROVED",
+      "isCustom": false,
+      "approvedAt": "2026-09-30T12:23:26.238Z"
+    },
+    "statusLogs": [
+      {
+        "id": 1,
+        "bookingId": 3,
+        "statusLama": null,
+        "statusBaru": "APPROVED",
+        "diubahOleh": "SYSTEM",
+        "catatan": "Booking dibuat via web",
+        "createdAt": "2026-09-30T12:23:26.238Z"
+      },
+      {
+        "id": 2,
+        "bookingId": 3,
+        "statusLama": "APPROVED",
+        "statusBaru": "CLOSED",
+        "diubahOleh": "ADMIN",
+        "catatan": "Status diubah menjadi CLOSED oleh Admin melalui Dashboard",
+        "createdAt": "2026-09-30T12:24:03.709Z"
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "kodeBooking": "ST-202609-001",
+    "userId": 1,
+    "kategori": "A",
+    "durasiBulan": 1,
+    "totalHarga": 199000,
+    "status": "APPROVED",
+    "tanggalPickup": "2026-10-05T09:00:00.000Z",
+    "lokasiPickup": "[tembalang] Jl. Banjarsari No. 12, Kos Griya Asri, Tembalang",
+    "createdAt": "2026-09-29T10:15:00.000Z",
+    "updatedAt": "2026-09-29T10:15:00.000Z",
+    "user": {
+      "id": 1,
+      "nama": "Ahmad Fauzi",
+      "noWa": "081234567890",
+      "persona": "Mahasiswa",
+      "alamat": "Kos Griya Asri, Kamar 04"
+    },
+    "items": [
+      {
+        "id": 1,
+        "bookingId": 1,
+        "namaBarang": "Dus Buku & Pakaian",
+        "tipe": "KECIL",
+        "jumlah": 2
+      }
+    ],
+    "quotation": {
+      "id": 1,
+      "bookingId": 1,
+      "kategori": "A",
+      "hargaPerBulan": 199000,
+      "totalHarga": 199000,
+      "status": "APPROVED",
+      "isCustom": false,
+      "approvedAt": "2026-09-29T10:15:00.000Z"
+    },
+    "statusLogs": [
+      {
+        "id": 1,
+        "bookingId": 1,
+        "statusLama": null,
+        "statusBaru": "APPROVED",
+        "diubahOleh": "SYSTEM",
+        "catatan": "Booking dibuat via form publik",
+        "createdAt": "2026-09-29T10:15:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kodeBooking": "ST-202609-002",
+    "userId": 2,
+    "kategori": "B",
+    "durasiBulan": 2,
+    "totalHarga": 499000,
+    "status": "LEAD",
+    "tanggalPickup": "2026-10-08T13:30:00.000Z",
+    "lokasiPickup": "[pogung] Pogung Baru Blok F No. 8, Pogung, Sinduadi",
+    "createdAt": "2026-09-29T14:30:00.000Z",
+    "updatedAt": "2026-09-29T14:30:00.000Z",
+    "user": {
+      "id": 2,
+      "nama": "Sarah Melati",
+      "noWa": "085712345678",
+      "persona": "Mahasiswa",
+      "alamat": "Pogung Baru Blok F"
+    },
+    "items": [
+      {
+        "id": 2,
+        "bookingId": 2,
+        "namaBarang": "Kulkas Mini Portable",
+        "tipe": "BESAR",
+        "jumlah": 1
+      },
+      {
+        "id": 3,
+        "bookingId": 2,
+        "namaBarang": "Kipas Angin Meja",
+        "tipe": "KECIL",
+        "jumlah": 1
+      }
+    ],
+    "quotation": {
+      "id": 2,
+      "bookingId": 2,
+      "kategori": "B",
+      "hargaPerBulan": 249500,
+      "totalHarga": 499000,
+      "status": "APPROVED",
+      "isCustom": false,
+      "approvedAt": "2026-09-29T14:30:00.000Z"
+    },
+    "statusLogs": [
+      {
+        "id": 2,
+        "bookingId": 2,
+        "statusLama": null,
+        "statusBaru": "LEAD",
+        "diubahOleh": "SYSTEM",
+        "catatan": "Booking baru menunggu konfirmasi admin",
+        "createdAt": "2026-09-29T14:30:00.000Z"
+      }
+    ]
+  }
+]
