@@ -226,18 +226,44 @@ export default function BookingPage() {
       <Navbar />
 
       <main className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
-        {/* Header Halaman */}
-        <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
-            <span className="material-symbols-outlined text-[16px]">edit_calendar</span>
-            Halaman Formulir Pemesanan
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Booking Penjemputan Kamar Kos
-          </h1>
-          <p className="text-sm text-slate-600">
-            Lengkapi data pemesanan di bawah. Estimasi harga dihitung secara otomatis dan disetujui sebelum booking dikirimkan.
-          </p>
+        {/* Visual Hero Banner: Kurir Penjemputan Kamar Kos */}
+        <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-lg bg-gradient-to-r from-blue-900 to-slate-900 text-white mb-8 group">
+          <div className="grid grid-cols-1 md:grid-cols-12 items-center">
+            <div className="md:col-span-7 p-6 sm:p-8 space-y-3 z-10">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 text-blue-200 text-xs font-extrabold border border-blue-400/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Armada Padang Standby
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                Kurir Jemput Langsung ke Pintu Kamar Kos
+              </h2>
+              <div className="flex flex-wrap gap-2.5 pt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-bold backdrop-blur-md border border-white/15">
+                  <span className="material-symbols-outlined text-emerald-400 text-[16px]">verified</span>
+                  Segel Barcode Unik
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-bold backdrop-blur-md border border-white/15">
+                  <span className="material-symbols-outlined text-sky-400 text-[16px]">photo_camera</span>
+                  Foto Dokumentasi 360°
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-bold backdrop-blur-md border border-white/15">
+                  <span className="material-symbols-outlined text-amber-400 text-[16px]">bolt</span>
+                  Live Estimasi Harga
+                </span>
+              </div>
+            </div>
+            <div className="md:col-span-5 relative h-48 md:h-full min-h-[200px] overflow-hidden">
+              <img
+                src="/images/courier.jpg"
+                alt="Kurir SafeTitip Siap Jemput"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-blue-900/90 md:from-blue-900 via-transparent to-transparent"></div>
+              <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-xl text-[11px] font-extrabold text-slate-800 shadow-md animate-float-slow">
+                📍 Area Kota Padang
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Demo Preset Bar untuk Reviewer/Mentor */}

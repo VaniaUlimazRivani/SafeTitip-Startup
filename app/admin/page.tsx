@@ -2,17 +2,42 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Filter & Pencarian
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedSession = localStorage.getItem('safetitip_admin_session');
+      if (savedSession) {
+        try {
+          setCurrentUser(JSON.parse(savedSession));
+        } catch (e) {
+          setCurrentUser({ nama: 'Vania (Super Admin)', role: 'ADMIN' });
+        }
+      } else {
+        setCurrentUser({ nama: 'Vania (Super Admin)', role: 'ADMIN' });
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('safetitip_admin_session');
+    }
+    router.push('/login');
+  };
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -77,7 +102,8 @@ export default function AdminDashboard() {
       const matchSearch =
         (b.kodeBooking || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (b.user?.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (b.user?.noWa || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (b.user?.noWa || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.lokasiPickup || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchStatus =
         statusFilter === 'ALL'
@@ -102,76 +128,106 @@ export default function AdminDashboard() {
       return {
         label: 'Dikonfirmasi',
         badge: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        dot: 'bg-emerald-500',
       };
     }
     if (status === 'CLOSED' || status === 'SELESAI') {
       return {
         label: 'Selesai',
         badge: 'bg-slate-200 text-slate-800 border-slate-300',
+        dot: 'bg-slate-500',
       };
     }
     if (status === 'LEAD' || status === 'MENUNGGU') {
       return {
         label: 'Menunggu Konfirmasi',
         badge: 'bg-amber-100 text-amber-800 border-amber-300',
+        dot: 'bg-amber-500 animate-pulse',
       };
     }
     if (status === 'STORED') {
       return {
         label: 'Disimpan di Gudang',
         badge: 'bg-blue-100 text-blue-800 border-blue-300',
+        dot: 'bg-blue-500',
       };
     }
     return {
       label: status,
       badge: 'bg-slate-100 text-slate-800 border-slate-300',
+      dot: 'bg-slate-400',
     };
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-100/70 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
       {/* ========================================================================= */}
-      {/* HEADER DASHBOARD ADMIN                                                    */}
+      {/* HEADER DASHBOARD ADMIN MODERN                                             */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
+            
+            {/* Left: Brand & Return */}
             <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl transition-all"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl transition-all"
               >
-                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                <span>Kembali ke Website</span>
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                <span>Ke Beranda</span>
               </Link>
+              
               <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+              
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">
-                  <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold">
+                  <span className="material-symbols-outlined text-[22px]">admin_panel_settings</span>
                 </div>
                 <div>
-                  <h1 className="text-lg font-extrabold text-slate-900 leading-tight">Dashboard Admin</h1>
-                  <p className="text-[10px] text-slate-500 font-semibold">SafeTitip Express & Care Management</p>
+                  <h1 className="text-lg font-extrabold text-slate-900 leading-tight">Dashboard Operasional</h1>
+                  <p className="text-[11px] text-slate-500 font-semibold">SafeTitip Express & Care Padang</p>
                 </div>
               </div>
             </div>
 
+            {/* Right: User Profile & Actions */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={fetchBookings}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
                 title="Muat Ulang Data"
               >
                 <span className="material-symbols-outlined text-[16px]">refresh</span>
-                <span className="hidden sm:inline">Refresh Data</span>
+                <span className="hidden sm:inline">Refresh</span>
               </button>
 
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Sistem Online</span>
-              </span>
+              {/* User Avatar Chip */}
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
+                <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-extrabold flex items-center justify-center text-xs">
+                  {currentUser?.nama ? currentUser.nama[0] : 'V'}
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-extrabold text-slate-900 leading-none">
+                    {currentUser?.nama || 'Vania (Admin)'}
+                  </p>
+                  <p className="text-[10px] text-emerald-600 font-bold leading-none mt-0.5">Online</p>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-colors flex items-center gap-1"
+                title="Keluar dari Portal Admin"
+              >
+                <span className="material-symbols-outlined text-[16px]">logout</span>
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
+
           </div>
         </div>
       </header>
@@ -181,55 +237,104 @@ export default function AdminDashboard() {
       {/* ========================================================================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Ringkasan Statistik */}
+        {/* Ringkasan Metrik Kartu Visual */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Booking</p>
-            <p className="text-3xl font-extrabold text-slate-900 mt-2">{stats.total}</p>
-            <p className="text-[11px] text-slate-400 mt-1">Keseluruhan pesanan</p>
+          
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Booking</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-slate-900">{stats.total}</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Seluruh pesanan masuk</p>
+            <div className="h-1.5 w-full bg-blue-100 rounded-full mt-3 overflow-hidden">
+              <div className="h-full bg-blue-600 rounded-full w-full"></div>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-600">Menunggu</p>
-            <p className="text-3xl font-extrabold text-amber-600 mt-2">{stats.menunggu}</p>
-            <p className="text-[11px] text-slate-400 mt-1">Perlu tindakan</p>
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600">Menunggu</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-amber-600">{stats.menunggu}</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Perlu verifikasi admin</p>
+            <div className="h-1.5 w-full bg-amber-100 rounded-full mt-3 overflow-hidden">
+              <div
+                className="h-full bg-amber-500 rounded-full"
+                style={{ width: `${stats.total > 0 ? (stats.menunggu / stats.total) * 100 : 0}%` }}
+              ></div>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">Dikonfirmasi</p>
-            <p className="text-3xl font-extrabold text-emerald-600 mt-2">{stats.dikonfirmasi}</p>
-            <p className="text-[11px] text-slate-400 mt-1">Siap penjemputan</p>
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Dikonfirmasi</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-emerald-600">{stats.dikonfirmasi}</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Siap jadwal penjemputan</p>
+            <div className="h-1.5 w-full bg-emerald-100 rounded-full mt-3 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ width: `${stats.total > 0 ? (stats.dikonfirmasi / stats.total) * 100 : 0}%` }}
+              ></div>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-600">Selesai</p>
-            <p className="text-3xl font-extrabold text-slate-700 mt-2">{stats.selesai}</p>
-            <p className="text-[11px] text-slate-400 mt-1">Selesai dititipkan</p>
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Selesai</span>
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+                <span className="material-symbols-outlined text-[18px]">inventory</span>
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-slate-800">{stats.selesai}</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Selesai masa titip</p>
+            <div className="h-1.5 w-full bg-slate-200 rounded-full mt-3 overflow-hidden">
+              <div
+                className="h-full bg-slate-600 rounded-full"
+                style={{ width: `${stats.total > 0 ? (stats.selesai / stats.total) * 100 : 0}%` }}
+              ></div>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs col-span-2 lg:col-span-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Total Nilai</p>
-            <p className="text-2xl font-extrabold text-blue-700 mt-2">
-              Rp {stats.omset.toLocaleString('id-ID')}
-            </p>
-            <p className="text-[11px] text-slate-400 mt-1">Simulasi transaksi</p>
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-blue-700 to-indigo-800 text-white shadow-md col-span-2 lg:col-span-1 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Total Nilai</span>
+              <span className="material-symbols-outlined text-[20px] text-blue-200">payments</span>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold tracking-tight mt-2">
+                Rp {stats.omset.toLocaleString('id-ID')}
+              </p>
+              <p className="text-[11px] text-blue-200 mt-0.5">Estimasi omset pilot</p>
+            </div>
           </div>
+
         </div>
 
         {/* Toolbar: Search, Filters & Action Guide */}
         <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
             {/* Search Input */}
             <div className="relative flex-1">
-              <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-[20px]">
+              <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 text-[18px]">
                 search
               </span>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari berdasarkan kode booking, nama pemesan, atau WhatsApp..."
-                className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-300 bg-slate-50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all"
+                placeholder="Cari kode booking, nama mahasiswa, no WA, atau lokasi kos..."
+                className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-300 bg-slate-50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all font-medium"
               />
             </div>
 
@@ -242,10 +347,10 @@ export default function AdminDashboard() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="h-11 px-3 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 >
-                  <option value="ALL">Semua Status</option>
-                  <option value="MENUNGGU">Menunggu</option>
-                  <option value="DIKONFIRMASI">Dikonfirmasi</option>
-                  <option value="SELESAI">Selesai</option>
+                  <option value="ALL">Semua Status ({bookings.length})</option>
+                  <option value="MENUNGGU">Menunggu ({stats.menunggu})</option>
+                  <option value="DIKONFIRMASI">Dikonfirmasi ({stats.dikonfirmasi})</option>
+                  <option value="SELESAI">Selesai ({stats.selesai})</option>
                 </select>
               </div>
 
@@ -263,12 +368,13 @@ export default function AdminDashboard() {
                 </select>
               </div>
             </div>
+
           </div>
 
           <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between">
             <span className="flex items-center gap-1.5 font-semibold">
               <span className="material-symbols-outlined text-[16px] text-blue-700">info</span>
-              Kriteria A-05: Anda dapat mengubah status booking secara instan pada tombol aksi di tabel di bawah. Perubahan tersimpan di database/local storage.
+              Skenario A-05: Anda dapat mengubah status pesanan secara instan dengan 1-klik pada tombol aksi. Perubahan tersimpan persisten ke database & file lokal.
             </span>
             <span className="text-[11px] font-bold text-blue-800">
               Menampilkan {filteredBookings.length} dari {bookings.length} data
@@ -276,12 +382,12 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tabel Data Booking */}
+        {/* Tabel Data Booking Modern */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           {loading ? (
             <div className="py-20 text-center space-y-3">
               <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-sm text-slate-500 font-semibold">Memuat daftar booking...</p>
+              <p className="text-sm text-slate-500 font-semibold">Memuat data booking...</p>
             </div>
           ) : error ? (
             <div className="p-8 text-center space-y-3 text-rose-600">
@@ -299,7 +405,7 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined text-[48px] text-slate-300">inbox</span>
               <p className="text-sm font-bold text-slate-700">Tidak ada data booking yang sesuai</p>
               <p className="text-xs text-slate-400">
-                Coba ubah kata kunci pencarian atau filter status.
+                Ubah kata kunci pencarian atau reset filter.
               </p>
             </div>
           ) : (
@@ -307,13 +413,13 @@ export default function AdminDashboard() {
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                    <th className="py-4 px-6">Booking ID & Pelanggan</th>
+                    <th className="py-4 px-6">Booking ID & Pemesan</th>
                     <th className="py-4 px-4">Kategori & Durasi</th>
                     <th className="py-4 px-4">Daftar Barang</th>
-                    <th className="py-4 px-4">Tgl Pickup</th>
+                    <th className="py-4 px-4">Tgl Pickup & Lokasi</th>
                     <th className="py-4 px-4">Estimasi Biaya</th>
                     <th className="py-4 px-4">Status Saat Ini</th>
-                    <th className="py-4 px-6 text-right">Ubah Status (A-05)</th>
+                    <th className="py-4 px-6 text-right">Aksi Cepat (A-05)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -322,7 +428,7 @@ export default function AdminDashboard() {
                     const isUpdating = updatingId === b.id;
 
                     return (
-                      <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={b.id} className="hover:bg-blue-50/40 transition-colors">
                         {/* ID & Pelanggan */}
                         <td className="py-4 px-6">
                           <div className="space-y-1">
@@ -337,7 +443,7 @@ export default function AdminDashboard() {
                               className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
                             >
                               <span>WA: {b.user?.noWa}</span>
-                              <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                              <span className="material-symbols-outlined text-[13px]">open_in_new</span>
                             </a>
                           </div>
                         </td>
@@ -369,15 +475,20 @@ export default function AdminDashboard() {
                           </div>
                         </td>
 
-                        {/* Tanggal Pickup */}
-                        <td className="py-4 px-4 text-xs font-semibold text-slate-700">
-                          {b.tanggalPickup
-                            ? new Date(b.tanggalPickup).toLocaleDateString('id-ID', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })
-                            : '-'}
+                        {/* Tanggal & Lokasi */}
+                        <td className="py-4 px-4 text-xs font-semibold text-slate-700 max-w-xs">
+                          <p className="text-slate-900 font-bold">
+                            {b.tanggalPickup
+                              ? new Date(b.tanggalPickup).toLocaleDateString('id-ID', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
+                              : '-'}
+                          </p>
+                          <p className="text-slate-500 text-[11px] truncate mt-0.5">
+                            {b.lokasiPickup || '-'}
+                          </p>
                         </td>
 
                         {/* Total Harga */}
@@ -392,9 +503,10 @@ export default function AdminDashboard() {
                         {/* Status Saat Ini */}
                         <td className="py-4 px-4">
                           <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold border ${st.badge}`}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${st.badge}`}
                           >
-                            {st.label}
+                            <span className={`w-2 h-2 rounded-full ${st.dot}`}></span>
+                            <span>{st.label}</span>
                           </span>
                         </td>
 
@@ -414,7 +526,7 @@ export default function AdminDashboard() {
                               <button
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus(b.id, 'APPROVED')}
-                                className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all disabled:opacity-50"
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all disabled:opacity-50 shadow-xs"
                                 title="Ubah status ke Dikonfirmasi"
                               >
                                 {isUpdating ? '...' : 'Konfirmasi'}
@@ -426,7 +538,7 @@ export default function AdminDashboard() {
                               <button
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus(b.id, 'CLOSED')}
-                                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all disabled:opacity-50"
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all disabled:opacity-50 shadow-xs"
                                 title="Ubah status ke Selesai"
                               >
                                 {isUpdating ? '...' : 'Selesai'}

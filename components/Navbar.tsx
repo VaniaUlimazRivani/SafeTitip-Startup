@@ -57,20 +57,29 @@ export default function Navbar() {
           </nav>
 
           {/* Header Right Actions */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 text-xs font-bold transition-all"
+              title="Masuk ke Portal Petugas / Admin"
+            >
+              <span className="material-symbols-outlined text-[18px]">lock_open</span>
+              <span>Login Admin</span>
+            </Link>
+
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 text-sm font-bold shadow-xs hover:border-slate-300 transition-all"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold shadow-xs hover:border-slate-300 transition-all"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Dashboard Admin</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Dashboard</span>
             </Link>
 
             <Link
               href="/booking"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-600/20 active:translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 active:translate-y-0.5 transition-all"
             >
-              <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+              <span className="material-symbols-outlined text-[16px]">calendar_today</span>
               <span>Booking Slot</span>
             </Link>
           </div>
@@ -117,19 +126,30 @@ export default function Navbar() {
             );
           })}
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-2.5 text-center rounded-xl bg-slate-100 text-slate-800 font-bold text-sm"
-            >
-              Dashboard Admin
-            </Link>
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">lock_open</span>
+                <span>Login Admin</span>
+              </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Dashboard</span>
+              </Link>
+            </div>
             <Link
               href="/booking"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-2.5 text-center rounded-xl bg-blue-600 text-white font-bold text-sm"
+              className="w-full py-2.5 text-center rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md"
             >
-              Booking Slot
+              Booking Slot Penjemputan
             </Link>
           </div>
         </div>
