@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,6 +15,26 @@ export default function Navbar() {
     { name: 'Keamanan SOP', href: '/keamanan' },
     { name: 'FAQ', href: '/faq' },
   ];
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('safetitip_user_session');
+      if (savedUser) {
+        try {
+          setCurrentUser(JSON.parse(savedUser));
+        } catch (e) {}
+      }
+    }
+  }, [pathname]);
+
+  const handleUserLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('safetitip_user_session');
+      setCurrentUser(null);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
@@ -58,21 +78,38 @@ export default function Navbar() {
 
           {/* Header Right Actions */}
           <div className="hidden sm:flex items-center gap-2.5">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 text-xs font-bold transition-all"
-              title="Masuk ke Portal Petugas / Admin"
-            >
-              <span className="material-symbols-outlined text-[18px]">lock_open</span>
-              <span>Login Admin</span>
-            </Link>
+            {/* Status Akun Pengguna / Mahasiswa */}
+            {currentUser ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
+                <span className="material-symbols-outlined text-[18px] text-blue-600">school</span>
+                <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
+                <button
+                  type="button"
+                  onClick={handleUserLogout}
+                  title="Keluar Akun Mahasiswa"
+                  className="p-1 rounded-md hover:bg-blue-200/60 text-slate-400 hover:text-rose-600 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-xs font-extrabold transition-all"
+                title="Masuk / Daftar Akun Pengguna Mahasiswa"
+              >
+                <span className="material-symbols-outlined text-[18px]">account_circle</span>
+                <span>Masuk / Daftar</span>
+              </Link>
+            )}
 
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold shadow-xs hover:border-slate-300 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all"
+              title="Portal Khusus Petugas / Admin"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Dashboard</span>
+              <span className="material-symbols-outlined text-[16px]">shield_person</span>
+              <span>Admin</span>
             </Link>
 
             <Link

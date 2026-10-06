@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -35,6 +35,54 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('safetitip_user_session');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setCurrentUser(parsed);
+          setFormData((prev) => ({
+            ...prev,
+            nama: prev.nama || parsed.nama,
+            noWa: prev.noWa || parsed.noWa,
+            campusArea: prev.campusArea || parsed.kampus || 'limau_manis',
+          }));
+        } catch (e) {}
+      }
+    }
+  }, []);
+
+  const handleInstantStudentLogin = () => {
+    const demo = {
+      role: 'USER',
+      nama: 'Budi Santoso',
+      email: 'budi@student.unand.ac.id',
+      noWa: '081234567890',
+      kampus: 'limau_manis',
+      loginAt: new Date().toISOString(),
+    };
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('safetitip_user_session', JSON.stringify(demo));
+    }
+    setCurrentUser(demo);
+    setFormData((prev) => ({
+      ...prev,
+      nama: demo.nama,
+      noWa: demo.noWa,
+      campusArea: demo.kampus,
+    }));
+  };
+
+  const handleStudentLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('safetitip_user_session');
+    }
+    setCurrentUser(null);
+  };
 
   // Live Classification & Quotation (Sebelum Submit)
   const liveClassification = useMemo(() => {
@@ -308,6 +356,66 @@ export default function BookingPage() {
             </button>
           </div>
         </div>
+
+        {/* Banner Status Login Pengguna (Mahasiswa) */}
+        {currentUser ? (
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200/90 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <span className="material-symbols-outlined text-[18px]">verified_user</span>
+              </div>
+              <div>
+                <p className="font-extrabold text-emerald-950">
+                  Masuk sebagai Pengguna: {currentUser.nama}
+                </p>
+                <p className="text-emerald-700 text-[11px]">
+                  {currentUser.email || currentUser.noWa} • Data profil Anda otomatis mengisi formulir di bawah.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleStudentLogout}
+              className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300 transition-colors shadow-2xs"
+            >
+              Ganti Akun
+            </button>
+          </div>
+        ) : (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <span className="material-symbols-outlined text-[18px]">school</span>
+              </div>
+              <div>
+                <p className="font-extrabold text-slate-900">
+                  Status Pengguna: Belum Masuk Akun
+                </p>
+                <p className="text-slate-600 text-[11px]">
+                  Sesuai ketentuan, Anda disarankan masuk atau mendaftar terlebih dahulu agar pesanan tercatat di akun Anda.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/login"
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-sm transition-all flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-[16px]">login</span>
+                <span>Masuk / Daftar</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleInstantStudentLogin}
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-blue-700 font-extrabold border border-blue-200 transition-all flex items-center gap-1 shadow-2xs"
+                title="Langsung coba masuk dengan akun mahasiswa demo Budi Santoso (UNAND)"
+              >
+                <span className="material-symbols-outlined text-[16px]">bolt</span>
+                <span>1-Klik Demo Mahasiswa</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Form Container */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
