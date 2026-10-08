@@ -3,16 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
   noWa      String    @map("no_wa")
   persona   String?
-  alamat    String?   @db.Text
+  alamat    String?
   createdAt DateTime  @default(now()) @map("created_at")
   bookings  Booking[]
 
@@ -20,16 +20,16 @@ model User {
 }
 
 model Booking {
-  id              Int              @id @default(autoincrement())
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
   kodeBooking     String           @unique @map("kode_booking")
-  userId          Int              @map("user_id")
+  userId          String           @map("user_id") @db.ObjectId
   kategori        String           // A, B, CUSTOM
   durasiBulan     Int              @map("durasi_bulan")
   totalHarga      Int              @map("total_harga")
   status          String           @default("LEAD")
   tanggalPickup   DateTime?        @map("tanggal_pickup")
-  lokasiPickup    String?          @map("lokasi_pickup") @db.Text
-  adminId         Int?             @map("admin_id")
+  lokasiPickup    String?          @map("lokasi_pickup")
+  adminId         String?          @map("admin_id") @db.ObjectId
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
@@ -46,12 +46,12 @@ model Booking {
 }
 
 model BookingItem {
-  id         Int      @id @default(autoincrement())
-  bookingId  Int      @map("booking_id")
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId  String   @map("booking_id") @db.ObjectId
   namaBarang String   @map("nama_barang")
   tipe       String   // KECIL, ELEKTRONIK_KECIL, BESAR, ELEKTRONIK_BESAR, KENDARAAN
   jumlah     Int      @default(1)
-  catatan    String?  @db.Text
+  catatan    String?
 
   booking    Booking  @relation(fields: [bookingId], references: [id])
 
@@ -59,14 +59,14 @@ model BookingItem {
 }
 
 model Quotation {
-  id            Int       @id @default(autoincrement())
-  bookingId     Int       @unique @map("booking_id")
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId     String    @unique @map("booking_id") @db.ObjectId
   kategori      String
   hargaPerBulan Int       @map("harga_per_bulan")
   totalHarga    Int       @map("total_harga")
   status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
   isCustom      Boolean   @default(false) @map("is_custom")
-  catatanCustom String?   @map("catatan_custom") @db.Text
+  catatanCustom String?   @map("catatan_custom")
   approvedAt    DateTime? @map("approved_at")
   createdAt     DateTime  @default(now()) @map("created_at")
 
@@ -76,14 +76,14 @@ model Quotation {
 }
 
 model ConditionReport {
-  id            Int                    @id @default(autoincrement())
-  bookingId     Int                    @unique @map("booking_id")
+  id            String                 @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId     String                 @unique @map("booking_id") @db.ObjectId
   status        String                 @default("MENUNGGU_VERIFIKASI")
   picKurir      String?                @map("pic_kurir")
   tanggalPickup DateTime?              @map("tanggal_pickup")
-  fotoBefore    String?                @map("foto_before") @db.Text
-  fotoAfter     String?                @map("foto_after") @db.Text
-  fotoWrapping  String?                @map("foto_wrapping") @db.Text
+  fotoBefore    String?                @map("foto_before")
+  fotoAfter     String?                @map("foto_after")
+  fotoWrapping  String?                @map("foto_wrapping")
   userApproved  Boolean                @default(false) @map("user_approved")
   approvedAt    DateTime?              @map("approved_at")
   createdAt     DateTime               @default(now()) @map("created_at")
@@ -95,12 +95,12 @@ model ConditionReport {
 }
 
 model ConditionReportItem {
-  id                Int             @id @default(autoincrement())
-  conditionReportId Int             @map("condition_report_id")
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  conditionReportId String          @map("condition_report_id") @db.ObjectId
   namaBarang        String          @map("nama_barang")
   kondisiAwal       String          @map("kondisi_awal") // BAIK, ADA_CACAT
-  catatanCacat      String?         @map("catatan_cacat") @db.Text
-  fotoBefore        String?         @map("foto_before") @db.Text
+  catatanCacat      String?         @map("catatan_cacat")
+  fotoBefore        String?         @map("foto_before")
 
   conditionReport   ConditionReport @relation(fields: [conditionReportId], references: [id])
 
@@ -108,14 +108,14 @@ model ConditionReportItem {
 }
 
 model WeeklyUpdate {
-  id            Int        @id @default(autoincrement())
-  bookingId     Int        @map("booking_id")
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId     String     @map("booking_id") @db.ObjectId
   mingguKe      Int        @map("minggu_ke")
   tanggalUpdate DateTime   @map("tanggal_update")
-  foto          String?    @db.Text
-  keterangan    String?    @db.Text
+  foto          String?
+  keterangan    String?
   dikirimVia    String     @default("WHATSAPP") @map("dikirim_via")
-  adminId       Int?       @map("admin_id")
+  adminId       String?    @map("admin_id") @db.ObjectId
   createdAt     DateTime   @default(now()) @map("created_at")
 
   booking       Booking    @relation(fields: [bookingId], references: [id])
@@ -125,12 +125,12 @@ model WeeklyUpdate {
 }
 
 model Agreement {
-  id         Int       @id @default(autoincrement())
-  bookingId  Int       @unique @map("booking_id")
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId  String    @unique @map("booking_id") @db.ObjectId
   status     String    @default("DRAFT") // DRAFT, SIGNED, CANCELLED
   bermaterai Boolean   @default(false)
   tanggalTtd DateTime? @map("tanggal_ttd")
-  fileUrl    String?   @map("file_url") @db.Text
+  fileUrl    String?   @map("file_url")
   createdAt  DateTime  @default(now()) @map("created_at")
 
   booking    Booking   @relation(fields: [bookingId], references: [id])
@@ -139,12 +139,12 @@ model Agreement {
 }
 
 model StatusLog {
-  id         Int      @id @default(autoincrement())
-  bookingId  Int      @map("booking_id")
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId  String   @map("booking_id") @db.ObjectId
   statusLama String?  @map("status_lama")
   statusBaru String   @map("status_baru")
   diubahOleh String   @map("diubah_oleh")
-  catatan    String?  @db.Text
+  catatan    String?
   createdAt  DateTime @default(now()) @map("created_at")
 
   booking    Booking  @relation(fields: [bookingId], references: [id])
@@ -153,7 +153,7 @@ model StatusLog {
 }
 
 model AdminUser {
-  id            Int            @id @default(autoincrement())
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
   nama          String
   role          String         // ADMIN, KURIR, OBSERVER, ESCALATION
   noWa          String         @map("no_wa")
