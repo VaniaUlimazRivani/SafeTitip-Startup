@@ -49,14 +49,14 @@ export async function getAllBookings() {
     });
     return bookings;
   } catch (dbErr: any) {
-    // Fallback gracefully ke file lokal jika database MySQL offline
-    console.warn('[Storage] Menggunakan fallback penyimpanan lokal JSON (MySQL offline).');
+    // Fallback gracefully ke file lokal jika database MongoDB offline
+    console.warn('[Storage] Menggunakan fallback penyimpanan lokal JSON (MongoDB offline).');
     const local = readLocalBookings();
     return local.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 }
 
-export async function getBookingById(id: number) {
+export async function getBookingById(id: string) {
   try {
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -76,7 +76,7 @@ export async function getBookingById(id: number) {
   }
 
   const local = readLocalBookings();
-  return local.find((b) => Number(b.id) === Number(id)) || null;
+  return local.find((b) => b.id === id) || null;
 }
 
 export async function createNewBooking(payload: {
@@ -160,7 +160,7 @@ export async function createNewBooking(payload: {
   } catch (dbErr: any) {
     console.warn('[Storage] DB Offline - Menyimpan booking baru ke local JSON file.');
     const local = readLocalBookings();
-    const newId = local.length > 0 ? Math.max(...local.map((b) => Number(b.id) || 0)) + 1 : 1;
+    const newId = `local_${Date.now()}`;
 
     const newBooking = {
       id: newId,
@@ -182,7 +182,7 @@ export async function createNewBooking(payload: {
         alamat: payload.lokasiPickup || '',
       },
       items: payload.items.map((it, idx) => ({
-        id: idx + 1,
+        id: `${newId}_item_${idx}`,
         bookingId: newId,
         namaBarang: it.nama,
         tipe: payload.kategori === 'CUSTOM' ? 'CUSTOM' : payload.kategori === 'B' ? 'BESAR' : 'KECIL',
@@ -190,7 +190,7 @@ export async function createNewBooking(payload: {
       })),
       quotation: payload.quotation
         ? {
-            id: newId,
+            id: `${newId}_q`,
             bookingId: newId,
             kategori: payload.kategori,
             hargaPerBulan: payload.quotation.hargaPerBulan,
@@ -202,7 +202,7 @@ export async function createNewBooking(payload: {
         : null,
       statusLogs: [
         {
-          id: 1,
+          id: `${newId}_sl`,
           bookingId: newId,
           statusLama: null,
           statusBaru: payload.status,
@@ -219,7 +219,7 @@ export async function createNewBooking(payload: {
   }
 }
 
-export async function updateStatusBooking(id: number, statusBaru: string, catatan?: string) {
+export async function updateStatusBooking(id: string, statusBaru: string, catatan?: string) {
   const now = new Date();
 
   try {
@@ -252,7 +252,7 @@ export async function updateStatusBooking(id: number, statusBaru: string, catata
   }
 
   const local = readLocalBookings();
-  const idx = local.findIndex((b) => Number(b.id) === Number(id));
+  const idx = local.findIndex((b) => b.id === id);
   if (idx === -1) return null;
 
   const current = local[idx];
@@ -262,7 +262,7 @@ export async function updateStatusBooking(id: number, statusBaru: string, catata
 
   if (!current.statusLogs) current.statusLogs = [];
   current.statusLogs.push({
-    id: current.statusLogs.length + 1,
+    id: `${id}_sl_${Date.now()}`,
     bookingId: id,
     statusLama: oldStatus,
     statusBaru,
