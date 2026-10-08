@@ -10,8 +10,11 @@ datasource db {
 model User {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
+  email     String?   @unique
+  password  String?
   noWa      String    @map("no_wa")
-  persona   String?
+  kampus    String?
+  persona   String?   @default("Mahasiswa")
   alamat    String?
   createdAt DateTime  @default(now()) @map("created_at")
   bookings  Booking[]
@@ -155,7 +158,9 @@ model StatusLog {
 model AdminUser {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
   nama          String
-  role          String         // ADMIN, KURIR, OBSERVER, ESCALATION
+  email         String         @unique
+  password      String
+  role          String         // ADMIN, GUDANG, KURIR, OBSERVER, ESCALATION
   noWa          String         @map("no_wa")
   createdAt     DateTime       @default(now()) @map("created_at")
   bookings      Booking[]
