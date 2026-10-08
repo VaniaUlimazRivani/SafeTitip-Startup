@@ -11,7 +11,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const { status, catatan } = await req.json();
-    const bookingId = Number(id);
+    const bookingId = id;
 
     const booking = await getBookingById(bookingId);
     if (!booking) {

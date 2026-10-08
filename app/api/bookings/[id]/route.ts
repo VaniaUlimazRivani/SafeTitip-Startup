@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const booking = await getBookingById(Number(id));
+    const booking = await getBookingById(id);
 
     if (!booking) {
       return NextResponse.json({ error: 'Booking tidak ditemukan' }, { status: 404 });

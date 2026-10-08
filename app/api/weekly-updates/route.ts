@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const bookingId = searchParams.get('bookingId');
 
   const updates = await prisma.weeklyUpdate.findMany({
-    where: bookingId ? { bookingId: Number(bookingId) } : undefined,
+    where: bookingId ? { bookingId } : undefined,
     orderBy: { tanggalUpdate: 'desc' },
   });
   return NextResponse.json(updates);
