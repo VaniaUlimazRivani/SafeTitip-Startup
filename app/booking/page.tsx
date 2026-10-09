@@ -49,6 +49,7 @@ export default function BookingPage() {
             ...prev,
             nama: prev.nama || parsed.nama,
             noWa: prev.noWa || parsed.noWa,
+            lokasiPickup: prev.lokasiPickup || parsed.alamat || '',
             campusArea: prev.campusArea || parsed.kampus || 'limau_manis',
           }));
         } catch (e) {}
@@ -60,9 +61,9 @@ export default function BookingPage() {
     const demo = {
       role: 'USER',
       nama: 'Budi Santoso',
-      email: 'budi@student.unand.ac.id',
+      email: 'budi@gmail.com',
       noWa: '081234567890',
-      kampus: 'limau_manis',
+      alamat: 'Jl. Limau Manis No. 12, Padang',
       loginAt: new Date().toISOString(),
     };
     if (typeof window !== 'undefined') {
@@ -73,7 +74,8 @@ export default function BookingPage() {
       ...prev,
       nama: demo.nama,
       noWa: demo.noWa,
-      campusArea: demo.kampus,
+      lokasiPickup: demo.alamat,
+      campusArea: 'limau_manis',
     }));
   };
 
@@ -408,10 +410,10 @@ export default function BookingPage() {
                 type="button"
                 onClick={handleInstantStudentLogin}
                 className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-blue-700 font-extrabold border border-blue-200 transition-all flex items-center gap-1 shadow-2xs"
-                title="Langsung coba masuk dengan akun mahasiswa demo Budi Santoso (UNAND)"
+                title="Langsung coba masuk dengan akun pengguna demo Budi Santoso"
               >
                 <span className="material-symbols-outlined text-[16px]">bolt</span>
-                <span>1-Klik Demo Mahasiswa</span>
+                <span>1-Klik Demo Pengguna</span>
               </button>
             </div>
           </div>

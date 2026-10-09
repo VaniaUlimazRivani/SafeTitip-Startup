@@ -78,15 +78,15 @@ export default function Navbar() {
 
           {/* Header Right Actions */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {/* Status Akun Pengguna / Mahasiswa */}
+            {/* Status Akun Pengguna */}
             {currentUser ? (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
-                <span className="material-symbols-outlined text-[18px] text-blue-600">school</span>
+                <span className="material-symbols-outlined text-[18px] text-blue-600">person</span>
                 <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
                 <button
                   type="button"
                   onClick={handleUserLogout}
-                  title="Keluar Akun Mahasiswa"
+                  title="Keluar Akun"
                   className="p-1 rounded-md hover:bg-blue-200/60 text-slate-400 hover:text-rose-600 transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">logout</span>
@@ -96,7 +96,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-xs font-extrabold transition-all"
-                title="Masuk / Daftar Akun Pengguna Mahasiswa"
+                title="Masuk / Daftar Akun Pengguna"
               >
                 <span className="material-symbols-outlined text-[18px]">account_circle</span>
                 <span>Masuk / Daftar</span>

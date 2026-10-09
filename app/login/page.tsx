@@ -1,601 +1,923 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
 
-  // Mode Akun: 'USER' (Mahasiswa yang booking) vs 'ADMIN' (Petugas/Admin)
-  const [accountType, setAccountType] = useState<'USER' | 'ADMIN'>('USER');
+  // Mode Antarmuka: 'LOGIN' (Masuk) atau 'REGISTER' (Daftar)
+  const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
-  // Sub-mode untuk Mahasiswa: 'LOGIN' vs 'REGISTER'
-  const [userAuthMode, setUserAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+  // State Input Mode Masuk (Login) - Kosong tanpa data demo
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
 
-  // Form State Pengguna (Mahasiswa)
-  const [userForm, setUserForm] = useState({
-    nama: 'Budi Santoso',
-    email: 'budi@student.unand.ac.id',
-    noWa: '081234567890',
-    kampus: 'limau_manis',
-    password: 'password123',
+  // State Input Mode Daftar (Register) - Kosong tanpa data demo
+  const [registerForm, setRegisterForm] = useState({
+    nama: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
-  // Form State Admin/Petugas
-  const [adminRole, setAdminRole] = useState<'ADMIN' | 'GUDANG' | 'KURIR'>('ADMIN');
-  const [adminEmail, setAdminEmail] = useState('admin@safetitip.com');
-  const [adminPassword, setAdminPassword] = useState('admin123');
+  // State Toggle Ikon Mata untuk Kata Sandi
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [language, setLanguage] = useState<'ID' | 'EN'>('ID');
 
-  // Quick Demo Helper untuk Mahasiswa
-  const handleUserDemoFill = (preset: 'unand' | 'unp' | 'upi') => {
-    if (preset === 'unand') {
-      setUserForm({
-        nama: 'Budi Santoso (UNAND)',
-        email: 'budi@student.unand.ac.id',
-        noWa: '081234567890',
-        kampus: 'limau_manis',
-        password: 'password123',
-      });
-    } else if (preset === 'unp') {
-      setUserForm({
-        nama: 'Rina Permata (UNP)',
-        email: 'rina@student.unp.ac.id',
-        noWa: '081298765432',
-        kampus: 'air_tawar',
-        password: 'password123',
-      });
-    } else {
-      setUserForm({
-        nama: 'Fajar Pratama (UPI YPTK)',
-        email: 'fajar@student.upiyptk.ac.id',
-        noWa: '082165432109',
-        kampus: 'lubuk_begalung',
-        password: 'password123',
-      });
-    }
-    setError('');
+  // Kalkulasi Kekuatan Kata Sandi Dinamis
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: '-', textColor: 'text-slate-400' };
+    let score = 0;
+    if (pass.length >= 6) score++;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass) || /[0-9]/.test(pass) || /[^A-Za-z0-9]/.test(pass)) score++;
+
+    if (score === 1) return { score: 1, label: 'Lemah', textColor: 'text-rose-500' };
+    if (score === 2) return { score: 2, label: 'Sedang', textColor: 'text-amber-500' };
+    if (score >= 3) return { score: 3, label: 'Kuat', textColor: 'text-emerald-500' };
+    return { score: 1, label: 'Lemah', textColor: 'text-rose-500' };
   };
 
-  // Quick Demo Helper untuk Admin
-  const handleAdminDemoFill = (selectedRole: 'ADMIN' | 'GUDANG' | 'KURIR') => {
-    setAdminRole(selectedRole);
-    if (selectedRole === 'ADMIN') {
-      setAdminEmail('admin@safetitip.com');
-      setAdminPassword('admin123');
-    } else if (selectedRole === 'GUDANG') {
-      setAdminEmail('gudang@safetitip.com');
-      setAdminPassword('gudang123');
-    } else {
-      setAdminEmail('kurir@safetitip.com');
-      setAdminPassword('kurir123');
-    }
+  const strength = getPasswordStrength(registerForm.password);
+
+  // Autentikasi Nyata Melalui Firebase Google Sign-In
+  const handleGoogleAuth = async () => {
+    setGoogleLoading(true);
     setError('');
+
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const userSession = {
+        role: 'USER',
+        nama: user.displayName || 'Pengguna Google',
+        email: user.email || '',
+        photoURL: user.photoURL || '',
+        noWa: user.phoneNumber || '',
+        alamat: 'Kota Padang, Sumatera Barat',
+        loginAt: new Date().toISOString(),
+        authProvider: 'google',
+      };
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
+
+        // Simpan juga ke daftar akun terdaftar lokal agar sinkron
+        const saved = localStorage.getItem('safetitip_registered_accounts');
+        const existingAccounts = saved ? JSON.parse(saved) : [];
+        if (!existingAccounts.some((acc: any) => acc.email?.toLowerCase() === user.email?.toLowerCase())) {
+          existingAccounts.push({
+            nama: userSession.nama,
+            email: userSession.email,
+            authProvider: 'google',
+            registeredAt: new Date().toISOString(),
+          });
+          localStorage.setItem('safetitip_registered_accounts', JSON.stringify(existingAccounts));
+        }
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/booking');
+      }, 700);
+    } catch (err: any) {
+      console.error('Firebase Google Sign-In Error:', err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Proses masuk dengan Google dibatalkan.');
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        setError('Permintaan login dibatalkan.');
+      } else if (err.code === 'auth/network-request-failed') {
+        setError('Koneksi internet bermasalah. Periksa jaringan Anda.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('Domain localhost belum diizinkan di Firebase Console > Authentication > Settings > Authorized domains.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Metode login Google belum diaktifkan di Firebase Console > Authentication > Sign-in method.');
+      } else {
+        setError(err.message || 'Gagal masuk dengan Google. Silakan coba lagi.');
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
+  // Submit Login Manual
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const trimmedIdentifier = loginIdentifier.trim().toLowerCase();
+    const enteredPassword = loginPassword.trim();
+
+    if (!trimmedIdentifier || !enteredPassword) {
+      setError('Harap masukkan Alamat Email dan Kata Sandi Anda.');
+      return;
+    }
 
     setLoading(true);
 
     setTimeout(() => {
       setLoading(false);
-      setSuccess(true);
 
-      if (accountType === 'USER') {
-        // Simpan Sesi Pengguna / Mahasiswa
+      let existingAccounts: any[] = [];
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('safetitip_registered_accounts');
+        if (saved) {
+          try {
+            existingAccounts = JSON.parse(saved);
+          } catch (err) {
+            existingAccounts = [];
+          }
+        }
+      }
+
+      const foundAccount = existingAccounts.find(
+        (acc: any) =>
+          acc.email?.toLowerCase() === trimmedIdentifier ||
+          acc.nama?.toLowerCase() === trimmedIdentifier
+      );
+
+      if (!foundAccount) {
+        setError(
+          'Akun belum terdaftar. Silakan lakukan pendaftaran pada menu Buat Akun Baru terlebih dahulu.'
+        );
+        return;
+      }
+
+      if (foundAccount.password !== enteredPassword) {
+        setError('Kata sandi yang Anda masukkan salah. Silakan periksa kembali.');
+        return;
+      }
+
+      setSuccess(true);
+      const userSession = {
+        role: 'USER',
+        nama: foundAccount.nama,
+        email: foundAccount.email,
+        noWa: foundAccount.noWa || '',
+        alamat: foundAccount.alamat || 'Kota Padang, Sumatera Barat',
+        loginAt: new Date().toISOString(),
+      };
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
+      }
+
+      setTimeout(() => {
+        router.push('/booking');
+      }, 700);
+    }, 500);
+  };
+
+  // Submit Daftar Akun Baru
+  const handleRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const trimmedNama = registerForm.nama.trim();
+    const trimmedEmail = registerForm.email.trim().toLowerCase();
+    const password = registerForm.password;
+    const confirmPassword = registerForm.confirmPassword;
+
+    if (!trimmedNama || !trimmedEmail || !password || !confirmPassword) {
+      setError('Semua kolom pendaftaran wajib diisi.');
+      return;
+    }
+
+    if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
+      setError('Format alamat email tidak valid.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Kata sandi minimal 8 karakter unik.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Konfirmasi kata sandi tidak cocok.');
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError('Harap setujui Syarat & Ketentuan serta Kebijakan Privasi.');
+      return;
+    }
+
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+
+      let existingAccounts: any[] = [];
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('safetitip_registered_accounts');
+        if (saved) {
+          try {
+            existingAccounts = JSON.parse(saved);
+          } catch (err) {
+            existingAccounts = [];
+          }
+        }
+      }
+
+      const emailExists = existingAccounts.some(
+        (acc: any) => acc.email?.toLowerCase() === trimmedEmail
+      );
+
+      if (emailExists) {
+        setError('Email ini sudah terdaftar. Silakan langsung masuk menggunakan akun Anda.');
+        return;
+      }
+
+      const newAccount = {
+        nama: trimmedNama,
+        email: trimmedEmail,
+        password: password,
+        registeredAt: new Date().toISOString(),
+      };
+
+      existingAccounts.push(newAccount);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(
+          'safetitip_registered_accounts',
+          JSON.stringify(existingAccounts)
+        );
+
         const userSession = {
           role: 'USER',
-          nama: userForm.nama,
-          email: userForm.email,
-          noWa: userForm.noWa,
-          kampus: userForm.kampus,
+          nama: newAccount.nama,
+          email: newAccount.email,
+          noWa: '',
+          alamat: 'Kota Padang, Sumatera Barat',
           loginAt: new Date().toISOString(),
         };
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
-        }
-
-        // Langsung arahkan ke halaman booking
-        setTimeout(() => {
-          router.push('/booking');
-        }, 700);
-      } else {
-        // Simpan Sesi Admin / Petugas
-        const adminSession = {
-          role: adminRole,
-          email: adminEmail,
-          nama:
-            adminRole === 'ADMIN'
-              ? 'Vania (Super Admin)'
-              : adminRole === 'GUDANG'
-              ? 'Bambang (Petugas Gudang)'
-              : 'Rahmat (Kurir Penjemputan)',
-          loginAt: new Date().toISOString(),
-        };
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('safetitip_admin_session', JSON.stringify(adminSession));
-        }
-
-        // Langsung arahkan ke halaman admin
-        setTimeout(() => {
-          router.push('/admin');
-        }, 700);
+        localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
       }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/booking');
+      }, 700);
     }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      <Navbar />
-
-      <main className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full flex items-center justify-center flex-1">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden">
-          
-          {/* ========================================================================= */}
-          {/* SISI KIRI: GAMBAR VISUAL SESUAI PERAN YANG DIPILIH                        */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-5 relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white p-8 flex flex-col justify-between overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-sky-400/20 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="relative z-10 space-y-3">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 text-blue-100 text-xs font-extrabold border border-white/20 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                {accountType === 'USER' ? 'Area Mahasiswa Kos' : 'Portal Operasional & Staf'}
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans flex flex-col justify-between selection:bg-indigo-600 selection:text-white">
+      {/* ========================================================================= */}
+      {/* 1. TOP HEADER                                                             */}
+      {/* ========================================================================= */}
+      <header className="w-full bg-white border-b border-slate-200/80 py-3.5 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo Brand Asli SafeTitip */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[24px]">inventory_2</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none group-hover:text-blue-600 transition-colors">
+                Safe<span className="text-blue-600">Titip</span>
               </span>
+              <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 mt-1">
+                Express & Care
+              </span>
+            </div>
+          </Link>
 
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug">
-                {accountType === 'USER' ? (
-                  <>
-                    Akun Pengguna <br />
-                    <span className="text-sky-300">Penitipan Kamar Kos</span>
-                  </>
-                ) : (
-                  <>
-                    Sistem Internal <br />
-                    <span className="text-amber-300">SafeTitip Admin</span>
-                  </>
-                )}
+          {/* Right Nav: Language & Need Help */}
+          <div className="flex items-center gap-5 sm:gap-6 text-xs font-bold text-slate-600">
+            <button
+              type="button"
+              onClick={() => setLanguage(language === 'ID' ? 'EN' : 'ID')}
+              className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px] text-slate-600">language</span>
+              <span>{language === 'ID' ? 'Bahasa (ID)' : 'English (US)'}</span>
+            </button>
+
+            <Link
+              href="/faq"
+              className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px] text-slate-600">help</span>
+              <span>{language === 'ID' ? 'Butuh Bantuan?' : 'Need Help?'}</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* 2. MAIN LAYOUT: DUA KARTU SEPERTI TAMPILAN MOCKUP                           */}
+      {/* ========================================================================= */}
+      <main className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full flex-1 flex items-center justify-center">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          
+          {/* ======================================================================= */}
+          {/* SISI KIRI: PANEL PROPOSISI NILAI (BACKGROUND BIRU PASTEL SESUAI GAMBAR) */}
+          {/* ======================================================================= */}
+          <div className="lg:col-span-5 bg-[#edf2fe] border border-blue-100/80 rounded-[32px] p-7 sm:p-9 flex flex-col justify-between shadow-xs">
+            <div>
+              {/* Badge Pill Top */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-indigo-700 text-[11px] font-extrabold shadow-2xs border border-indigo-100">
+                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                <span>SAFETITIP EXPRESS & CARE</span>
+              </div>
+
+              {/* Main Headline */}
+              <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight mt-6">
+                Titip Aman, Cepat,<br />
+                <span className="text-indigo-600">dan Terpercaya.</span>
               </h2>
 
-              <p className="text-xs text-blue-100/90 leading-relaxed">
-                {accountType === 'USER'
-                  ? 'Daftar dan masuk sebagai pengguna untuk booking penjemputan barang, cek estimasi tarif otomatis, dan pantau status barang Anda.'
-                  : 'Kelola pemesanan masuk, update laporan kondisi foto 360°, dan kelola inventaris gudang Kota Padang.'}
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-3 font-normal">
+                Solusi penitipan & pengiriman titipan lintas kota dan wilayah dengan sistem keamanan berlapis serta kurir terverifikasi.
               </p>
-            </div>
 
-            {/* Gambar Pendukung Beresolusi Tinggi */}
-            <div className="relative z-10 my-6 rounded-2xl overflow-hidden border border-white/20 shadow-lg group">
-              <img
-                src={accountType === 'USER' ? '/images/hero.jpg' : '/images/warehouse.jpg'}
-                alt="SafeTitip Akses"
-                className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-bold text-white">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  {accountType === 'USER' ? 'Mudik Aman Tanpa Cemas' : 'CCTV & Gudang Aktif'}
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-md">
-                  Padang Area
-                </span>
+              {/* 3 Kartu Keunggulan */}
+              <div className="space-y-3.5 mt-7">
+                {/* 1. Real-Time Live Tracking */}
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">radar</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                      Real-Time Live Tracking
+                    </h3>
+                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                      Pantau lokasi paket Anda dengan akurasi GPS detik per detik hingga tiba di tujuan.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Asuransi & Proteksi 100% */}
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">verified_user</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                      Asuransi & Proteksi 100%
+                    </h3>
+                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                      Jaminan ganti rugi penuh tanpa potongan jika terjadi kendala pada barang berharga Anda.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Jaringan Terverifikasi */}
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">verified</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                      Jaringan Terverifikasi
+                    </h3>
+                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                      Setiap kurir melalui verifikasi identitas biometrik dan latar belakang legal yang ketat.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="relative z-10 text-[11px] text-blue-200 flex items-center justify-between pt-2 border-t border-white/15">
-              <span>{accountType === 'USER' ? 'Layanan Mahasiswa' : 'Akses Khusus Staf'}</span>
-              <span className="font-bold text-white">SafeTitip v0.1</span>
+            {/* Bottom Button / Badge */}
+            <div className="mt-7 w-full py-3.5 px-4 rounded-2xl bg-indigo-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg shadow-indigo-600/25">
+              <span className="material-symbols-outlined text-[20px] text-white">local_shipping</span>
+              <span>Titipan Terkirim Aman & Tepat Waktu</span>
             </div>
           </div>
 
-          {/* ========================================================================= */}
-          {/* SISI KANAN: FORMULIR DUA MODE (PENGGUNA MAHASISWA VS PETUGAS ADMIN)       */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-7 p-7 sm:p-10 space-y-6">
-            
-            {/* 1. TAB UTAMA: PENGGUNA (MAHASISWA) VS ADMIN/PETUGAS */}
-            <div className="p-1 rounded-2xl bg-slate-100 border border-slate-200/90 grid grid-cols-2 gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountType('USER');
-                  setError('');
-                }}
-                className={`py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
-                  accountType === 'USER'
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">school</span>
-                <span>Pengguna / Mahasiswa</span>
-              </button>
+          {/* ======================================================================= */}
+          {/* SISI KANAN: FORM MASUK (LOGIN) ATAU BUAT AKUN BARU (REGISTER)           */}
+          {/* ======================================================================= */}
+          <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-[32px] p-7 sm:p-10 shadow-xl shadow-slate-200/40 flex flex-col justify-between">
+            <div>
+              {/* Error Alert */}
+              {error && (
+                <div className="mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountType('ADMIN');
-                  setError('');
-                }}
-                className={`py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
-                  accountType === 'ADMIN'
-                    ? 'bg-slate-900 text-white shadow-md'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">shield_person</span>
-                <span>Petugas & Admin</span>
-              </button>
-            </div>
+              {/* Success Alert */}
+              {success && (
+                <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  <span>
+                    {authMode === 'LOGIN'
+                      ? 'Berhasil Masuk! Mengalihkan ke Halaman Booking...'
+                      : 'Akun Berhasil Dibuat! Mengalihkan ke Halaman Booking...'}
+                  </span>
+                </div>
+              )}
 
-            {/* Error / Success Feedback */}
-            {error && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{error}</span>
-              </div>
-            )}
+              {/* =================================================================== */}
+              {/* TAMPILAN MODE MASUK (LOGIN)                                         */}
+              {/* =================================================================== */}
+              {authMode === 'LOGIN' ? (
+                <>
+                  {/* Logo Di Atas Form (Tetap di kiri sejajar tulisan) */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+                      <span className="material-symbols-outlined text-[22px]">inventory_2</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">
+                        Safe<span className="text-blue-600">Titip</span>
+                      </span>
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 mt-1">
+                        Express & Care
+                      </span>
+                    </div>
+                  </div>
 
-            {success && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                <span>
-                  {accountType === 'USER'
-                    ? 'Berhasil Masuk! Mengalihkan ke Halaman Booking...'
-                    : 'Login Berhasil! Mengalihkan ke Dashboard Admin...'}
-                </span>
-              </div>
-            )}
-
-            {/* ===================================================================== */}
-            {/* KONTEN JIKA MODE: PENGGUNA / MAHASISWA                                */}
-            {/* ===================================================================== */}
-            {accountType === 'USER' && (
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                      <span>{userAuthMode === 'LOGIN' ? 'Masuk Mahasiswa' : 'Daftar Akun Mahasiswa'}</span>
-                      <span className="material-symbols-outlined text-blue-600 text-[24px]">account_circle</span>
+                  {/* Judul & Deskripsi Header Form */}
+                  <div className="mt-5">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                      Selamat Datang Kembali
                     </h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {userAuthMode === 'LOGIN'
-                        ? 'Masuk dengan akun terdaftar untuk melakukan booking.'
-                        : 'Lengkapi data mahasiswa Anda untuk mulai booking penjemputan.'}
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                      Masuk ke akun SafeTitip Anda untuk memantau dan mengelola titipan barang.
                     </p>
                   </div>
 
-                  {/* Switcher Masuk vs Daftar */}
-                  <div className="flex items-center gap-1 bg-blue-50/70 p-1 rounded-xl border border-blue-200">
-                    <button
-                      type="button"
-                      onClick={() => setUserAuthMode('LOGIN')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                        userAuthMode === 'LOGIN'
-                          ? 'bg-white text-blue-700 shadow-xs'
-                          : 'text-slate-600 hover:text-blue-700'
-                      }`}
-                    >
-                      Masuk
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUserAuthMode('REGISTER')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                        userAuthMode === 'REGISTER'
-                          ? 'bg-white text-blue-700 shadow-xs'
-                          : 'text-slate-600 hover:text-blue-700'
-                      }`}
-                    >
-                      Daftar
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tombol Demo Cepat Mahasiswa (1-Klik untuk Dosen / Reviewer) */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200/90 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold text-blue-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-blue-600 text-[16px]">touch_app</span>
-                      Pilihan Akun Demo Mahasiswa (1-Klik):
-                    </span>
-                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                      Auto-Fill
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUserDemoFill('unand')}
-                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-100 text-blue-700 text-xs font-extrabold border border-blue-200 transition-colors shadow-2xs"
-                    >
-                      🎓 Budi (UNAND)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUserDemoFill('unp')}
-                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-100 text-blue-700 text-xs font-extrabold border border-blue-200 transition-colors shadow-2xs"
-                    >
-                      🎓 Rina (UNP)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUserDemoFill('upi')}
-                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-100 text-blue-700 text-xs font-extrabold border border-blue-200 transition-colors shadow-2xs"
-                    >
-                      🎓 Fajar (UPI YPTK)
-                    </button>
-                  </div>
-                </div>
-
-                {/* Form Mahasiswa */}
-                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
-                  {userAuthMode === 'REGISTER' && (
+                  {/* Form Masuk Manual di Atas */}
+                  <form onSubmit={handleLoginSubmit} className="mt-6 space-y-4">
+                    {/* Field: Alamat Email */}
                     <div>
-                      <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                        Nama Lengkap Mahasiswa
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1.5">
+                        Alamat Email
                       </label>
-                      <div className="relative rounded-2xl overflow-hidden shadow-2xs">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
-                          <span className="material-symbols-outlined text-[20px]">badge</span>
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                          <span className="material-symbols-outlined text-[20px]">mail</span>
                         </div>
                         <input
                           type="text"
-                          value={userForm.nama}
-                          onChange={(e) => setUserForm({ ...userForm, nama: e.target.value })}
-                          placeholder="Masukkan nama lengkap Anda"
+                          value={loginIdentifier}
+                          onChange={(e) => setLoginIdentifier(e.target.value)}
+                          placeholder="nama@email.com"
                           required
-                          className="w-full pl-11 pr-4 py-2.5 bg-blue-50/20 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-100 transition-all outline-hidden"
+                          className="w-full pl-11 pr-4 py-3 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
                         />
                       </div>
                     </div>
-                  )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Field: Kata Sandi + Ikon Mata */}
                     <div>
-                      <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                        Email Kampus / Pribadi
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1.5">
+                        Kata Sandi
                       </label>
-                      <div className="relative rounded-2xl overflow-hidden shadow-2xs">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                          <span className="material-symbols-outlined text-[20px]">lock</span>
+                        </div>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                          className="w-full pl-11 pr-11 py-3 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle Password Visibility"
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            {showPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Row: Ingat Saya & Lupa Kata Sandi */}
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 font-semibold hover:text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                        />
+                        <span>Ingat Saya</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => alert('Fitur reset kata sandi akan dikirimkan ke email terdaftar Anda.')}
+                        className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                      >
+                        Lupa Kata Sandi?
+                      </button>
+                    </div>
+
+                    {/* Tombol Utama: Masuk Sekarang */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-extrabold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+                    >
+                      {loading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Memverifikasi Akun...</span>
+                        </>
+                      ) : (
+                        <span>Masuk Sekarang</span>
+                      )}
+                    </button>
+                  </form>
+
+                  {/* Divider: atau daftar dengan (Di Bawah Form) */}
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-[11px] font-bold text-slate-400">
+                      <span className="bg-white px-3">atau daftar dengan</span>
+                    </div>
+                  </div>
+
+                  {/* Tombol Nyata Google Sign-In Sesuai Gambar (Di Bawah Form) */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    disabled={googleLoading || loading}
+                    className="w-full py-2.5 px-4 rounded-2xl border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-60 active:scale-[0.99]"
+                  >
+                    {googleLoading ? (
+                      <span className="w-4 h-4 border-2 border-slate-400 border-t-indigo-600 rounded-full animate-spin"></span>
+                    ) : (
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                        />
+                      </svg>
+                    )}
+                    <span>Google</span>
+                  </button>
+
+                  {/* Toggle Switcher: Belum punya akun? Daftar Sekarang */}
+                  <div className="text-center mt-5 text-xs text-slate-600 font-semibold">
+                    Belum punya akun?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('REGISTER');
+                        setError('');
+                        setSuccess(false);
+                      }}
+                      className="font-extrabold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                    >
+                      Daftar Sekarang
+                    </button>
+                  </div>
+
+                  {/* Banner Keamanan Ringkas */}
+                  <div className="mt-7 p-3 rounded-2xl bg-[#f0f5ff] border border-blue-100 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-100/80 text-indigo-700 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[18px]">lock</span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 leading-snug">
+                      <span>Data dan transaksi Anda terlindungi sepenuhnya.</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* =================================================================== */
+                /* TAMPILAN BUAT AKUN BARU (SESUAI GAMBAR MOCKUP TERBARU)              */
+                /* =================================================================== */
+                <>
+                  {/* Top Bar Form: Logo di Kiri Sejajar Tulisan (Tanpa Tanda Panah) */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+                        <span className="material-symbols-outlined text-[22px]">inventory_2</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">
+                          Safe<span className="text-blue-600">Titip</span>
+                        </span>
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 mt-1">
+                          Express & Care
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="hidden sm:inline text-xs font-bold text-slate-500">Create Account</span>
+                      <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                        <span className="material-symbols-outlined text-[18px]">person</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badge: Keamanan Terjamin 100% */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-extrabold border border-indigo-100 mt-5">
+                    <span className="material-symbols-outlined text-[15px] text-indigo-600">verified_user</span>
+                    <span>Keamanan Terjamin 100%</span>
+                  </div>
+
+                  {/* Judul & Subjudul Sesuai Mockup Gambar */}
+                  <div className="mt-3">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                      Buat Akun Baru
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                      Mulai pengalaman terbaik Anda dalam hitungan detik.
+                    </p>
+                  </div>
+
+                  {/* Formulir Pendaftaran Mandiri di Atas */}
+                  <form onSubmit={handleRegisterSubmit} className="mt-5 space-y-3.5">
+                    {/* 1. Nama Lengkap */}
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                        Nama Lengkap
+                      </label>
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                          <span className="material-symbols-outlined text-[20px]">person</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={registerForm.nama}
+                          onChange={(e) => setRegisterForm({ ...registerForm, nama: e.target.value })}
+                          placeholder="cth. Alex Pratama"
+                          required
+                          className="w-full pl-11 pr-4 py-2.5 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 2. Alamat Email */}
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                        Alamat Email
+                      </label>
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                           <span className="material-symbols-outlined text-[20px]">mail</span>
                         </div>
                         <input
                           type="email"
-                          value={userForm.email}
-                          onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                          placeholder="nama@student.ac.id"
+                          value={registerForm.email}
+                          onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                          placeholder="alex@domain.com"
                           required
-                          className="w-full pl-11 pr-4 py-2.5 bg-blue-50/20 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-100 transition-all outline-hidden"
+                          className="w-full pl-11 pr-4 py-2.5 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
                         />
                       </div>
                     </div>
 
+                    {/* 3. Kata Sandi + Toggle Ikon Mata */}
                     <div>
-                      <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                        Nomor WhatsApp
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                        Kata Sandi
                       </label>
-                      <div className="relative rounded-2xl overflow-hidden shadow-2xs">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
-                          <span className="material-symbols-outlined text-[20px]">call</span>
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                          <span className="material-symbols-outlined text-[20px]">lock</span>
                         </div>
                         <input
-                          type="tel"
-                          value={userForm.noWa}
-                          onChange={(e) => setUserForm({ ...userForm, noWa: e.target.value })}
-                          placeholder="0812xxxxxxxx"
+                          type={showPassword ? 'text' : 'password'}
+                          value={registerForm.password}
+                          onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                          placeholder="Minimal 8 karakter unik"
                           required
-                          className="w-full pl-11 pr-4 py-2.5 bg-blue-50/20 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-100 transition-all outline-hidden"
+                          className="w-full pl-11 pr-11 py-2.5 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle Password Visibility"
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            {showPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* Indikator Kekuatan Kata Sandi Sesuai Gambar */}
+                      <div className="mt-2 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-slate-500">Kekuatan kata sandi:</span>
+                          <span className={strength.textColor}>{strength.label}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5 h-1.5">
+                          <div
+                            className={`rounded-full transition-all ${
+                              strength.score >= 1
+                                ? strength.score === 1
+                                  ? 'bg-rose-500'
+                                  : strength.score === 2
+                                  ? 'bg-amber-500'
+                                  : 'bg-emerald-500'
+                                : 'bg-slate-200'
+                            }`}
+                          ></div>
+                          <div
+                            className={`rounded-full transition-all ${
+                              strength.score >= 2
+                                ? strength.score === 2
+                                  ? 'bg-amber-500'
+                                  : 'bg-emerald-500'
+                                : 'bg-slate-200'
+                            }`}
+                          ></div>
+                          <div
+                            className={`rounded-full transition-all ${
+                              strength.score >= 3 ? 'bg-emerald-500' : 'bg-slate-200'
+                            }`}
+                          ></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {userAuthMode === 'REGISTER' && (
+                    {/* 4. Konfirmasi Kata Sandi + Toggle Ikon Mata */}
                     <div>
-                      <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                        Asal Kampus di Kota Padang
+                      <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                        Konfirmasi Kata Sandi
                       </label>
-                      <select
-                        value={userForm.kampus}
-                        onChange={(e) => setUserForm({ ...userForm, kampus: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-blue-50/20 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-100 transition-all outline-hidden"
-                      >
-                        <option value="limau_manis">Limau Manis (UNAND / PNP)</option>
-                        <option value="air_tawar">Air Tawar (UNP)</option>
-                        <option value="lubuk_begalung">Lubuk Begalung (UPI YPTK)</option>
-                        <option value="ulak_karang">Ulak Karang (UBH)</option>
-                        <option value="kuranji">Kuranji / Gn Pangilun (UIN Imam Bonjol)</option>
-                        <option value="lainnya">Wilayah / Kampus Lainnya di Padang</option>
-                      </select>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                      Kata Sandi
-                    </label>
-                    <div className="relative rounded-2xl overflow-hidden shadow-2xs">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
-                        <span className="material-symbols-outlined text-[20px]">lock</span>
+                      <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                          <span className="material-symbols-outlined text-[20px]">lock</span>
+                        </div>
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={registerForm.confirmPassword}
+                          onChange={(e) =>
+                            setRegisterForm({ ...registerForm, confirmPassword: e.target.value })
+                          }
+                          placeholder="Ulangi kata sandi"
+                          required
+                          className="w-full pl-11 pr-11 py-2.5 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          aria-label="Toggle Confirm Password Visibility"
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
                       </div>
-                      <input
-                        type="password"
-                        value={userForm.password}
-                        onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                        placeholder="••••••••"
-                        required
-                        className="w-full pl-11 pr-4 py-2.5 bg-blue-50/20 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-100 transition-all outline-hidden"
-                      />
+                    </div>
+
+                    {/* 5. Checkbox Syarat & Ketentuan */}
+                    <div className="pt-1">
+                      <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-600 leading-snug select-none">
+                        <input
+                          type="checkbox"
+                          checked={agreeTerms}
+                          onChange={(e) => setAgreeTerms(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer shrink-0"
+                        />
+                        <span>
+                          Saya menyetujui{' '}
+                          <span className="text-indigo-600 font-bold hover:underline">
+                            Syarat & Ketentuan
+                          </span>{' '}
+                          serta{' '}
+                          <span className="text-indigo-600 font-bold hover:underline">
+                            Kebijakan Privasi
+                          </span>{' '}
+                          SafeTitip.
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Tombol Utama: Buat Akun Saya */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-extrabold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60 mt-2"
+                    >
+                      {loading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Mendaftarkan Akun Anda...</span>
+                        </>
+                      ) : (
+                        <span>Buat Akun Saya</span>
+                      )}
+                    </button>
+                  </form>
+
+                  {/* Divider: atau daftar dengan (Di Bawah Form) */}
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-[11px] font-bold text-slate-400">
+                      <span className="bg-white px-3">atau daftar dengan</span>
                     </div>
                   </div>
 
+                  {/* Tombol Nyata Google Sign-In Sesuai Gambar (Di Bawah Form) */}
                   <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
-                    className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-sm shadow-lg shadow-blue-600/30 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-white disabled:opacity-70 mt-3"
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    disabled={googleLoading || loading}
+                    className="w-full py-2.5 px-4 rounded-2xl border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-60 active:scale-[0.99]"
                   >
-                    {loading ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span>Memproses Akun...</span>
-                      </>
+                    {googleLoading ? (
+                      <span className="w-4 h-4 border-2 border-slate-400 border-t-indigo-600 rounded-full animate-spin"></span>
                     ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[20px] text-white">login</span>
-                        <span>{userAuthMode === 'LOGIN' ? 'Masuk & Lanjut ke Form Booking' : 'Daftar & Mulai Booking'}</span>
-                        <span className="material-symbols-outlined text-[16px] text-white">arrow_forward</span>
-                      </>
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                        />
+                      </svg>
                     )}
+                    <span>Google</span>
                   </button>
-                </form>
-              </div>
-            )}
 
-            {/* ===================================================================== */}
-            {/* KONTEN JIKA MODE: PETUGAS & ADMIN                                     */}
-            {/* ===================================================================== */}
-            {accountType === 'ADMIN' && (
-              <div className="space-y-5">
-                <div>
-                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span>Portal Petugas & Admin</span>
-                    <span className="material-symbols-outlined text-slate-900 text-[24px]">shield</span>
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Akses kontrol internal SafeTitip untuk Super Admin, Petugas Gudang, dan Kurir.
-                  </p>
-                </div>
-
-                {/* Role Switcher Admin */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                    Pilih Peran Petugas:
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* Switcher: Sudah memiliki akun? Masuk di sini */}
+                  <div className="text-center mt-5 text-xs text-slate-600 font-semibold">
+                    Sudah memiliki akun?{' '}
                     <button
                       type="button"
-                      onClick={() => handleAdminDemoFill('ADMIN')}
-                      className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                        adminRole === 'ADMIN'
-                          ? 'border-blue-600 bg-blue-50/80 text-blue-700 shadow-xs ring-2 ring-blue-500/20 font-extrabold'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-600 font-bold'
-                      }`}
+                      onClick={() => {
+                        setAuthMode('LOGIN');
+                        setError('');
+                        setSuccess(false);
+                      }}
+                      className="font-extrabold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[20px] text-blue-600">shield_person</span>
-                      <span className="text-xs">Super Admin</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAdminDemoFill('GUDANG')}
-                      className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                        adminRole === 'GUDANG'
-                          ? 'border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs ring-2 ring-indigo-500/20 font-extrabold'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-600 font-bold'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[20px] text-indigo-600">warehouse</span>
-                      <span className="text-xs">Staf Gudang</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAdminDemoFill('KURIR')}
-                      className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                        adminRole === 'KURIR'
-                          ? 'border-emerald-600 bg-emerald-50/80 text-emerald-700 shadow-xs ring-2 ring-emerald-500/20 font-extrabold'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-600 font-bold'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[20px] text-emerald-600">local_shipping</span>
-                      <span className="text-xs">Kurir Jemput</span>
+                      Masuk di sini
                     </button>
                   </div>
-                </div>
 
-                {/* Form Admin */}
-                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
-                  <div>
-                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                      Email Petugas / Admin
-                    </label>
-                    <input
-                      type="email"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      placeholder="admin@safetitip.com"
-                      required
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 focus:border-slate-900 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-slate-100 transition-all outline-hidden"
-                    />
+                  {/* Bottom Trust Badge: Enkripsi End-to-End */}
+                  <div className="mt-7 p-3 rounded-2xl bg-[#edf2fe] border border-blue-100 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-white text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs">
+                      <span className="material-symbols-outlined text-[18px]">lock_reset</span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 leading-snug">
+                      <span className="font-extrabold text-slate-900 block">Enkripsi End-to-End</span>
+                      <span>Data Anda disimpan secara aman dengan proteksi terkini.</span>
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                      Kata Sandi
-                    </label>
-                    <input
-                      type="password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 focus:border-slate-900 rounded-2xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-slate-100 transition-all outline-hidden"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
-                    className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-sm shadow-lg shadow-slate-900/25 hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-white disabled:opacity-70 mt-2"
-                  >
-                    {loading ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span>Memverifikasi Akses...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[20px] text-white">login</span>
-                        <span>Masuk ke Dashboard Admin</span>
-                        <span className="material-symbols-outlined text-[16px] text-white">arrow_forward</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Back link */}
-            <div className="text-center pt-2">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-                <span>Kembali ke Beranda</span>
-              </Link>
+                </>
+              )}
             </div>
-
           </div>
 
         </div>
       </main>
 
-      <Footer />
+      {/* Footer Minimalis */}
+      <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-200/60 bg-white">
+        <p>© 2026 SafeTitip Padang. Penitipan & Ekspedisi Terpercaya.</p>
+      </footer>
     </div>
   );
 }
