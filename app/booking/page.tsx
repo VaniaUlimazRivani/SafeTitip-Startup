@@ -250,6 +250,7 @@ export default function BookingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          userId: currentUser?.id,
           durasiBulan: Number(formData.durasiBulan),
           lokasiPickup: `[${finalArea}] ${formData.lokasiPickup}`,
           items: items.map((i) => ({ nama: i.nama.trim(), jumlah: Number(i.jumlah) })),

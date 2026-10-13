@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 
     if (klasifikasi.kategori === 'CUSTOM') {
       const booking = await createNewBooking({
+        userId: data.userId,
         nama: data.nama,
         noWa: data.noWa,
         alamat: data.alamat,
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
     )!;
 
     const booking = await createNewBooking({
+      userId: data.userId,
       nama: data.nama,
       noWa: data.noWa,
       alamat: data.alamat,
