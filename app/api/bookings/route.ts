@@ -17,11 +17,15 @@ export async function POST(req: NextRequest) {
     }
 
     const data = parsed.data;
+    const tipeDurasi = data.tipeDurasi || 'BULAN';
+    const durasiNilai = data.durasiNilai || data.durasiBulan || 1;
     const klasifikasi = klasifikasiBarang(data.items);
 
     if (klasifikasi.kategori === 'REJECT') {
       return NextResponse.json({ error: klasifikasi.alasan }, { status: 422 });
     }
+
+    const labelDurasi = `${durasiNilai} ${tipeDurasi === 'HARI' ? 'Hari' : tipeDurasi === 'MINGGU' ? 'Minggu' : 'Bulan'}`;
 
     if (klasifikasi.kategori === 'CUSTOM') {
       const booking = await createNewBooking({
@@ -32,6 +36,9 @@ export async function POST(req: NextRequest) {
         lokasiPickup: data.lokasiPickup,
         tanggalPickup: data.tanggalPickup,
         durasiBulan: data.durasiBulan,
+        tipeDurasi,
+        durasiNilai,
+        labelDurasi,
         kategori: 'CUSTOM',
         totalHarga: 0,
         status: 'LEAD',
@@ -40,6 +47,7 @@ export async function POST(req: NextRequest) {
           hargaPerBulan: 0,
           totalHarga: 0,
           isCustom: true,
+          labelDurasi,
         },
       });
 
@@ -51,7 +59,8 @@ export async function POST(req: NextRequest) {
 
     const quotation = hitungQuotation(
       klasifikasi.kategori as 'A' | 'B',
-      data.durasiBulan
+      durasiNilai,
+      tipeDurasi
     )!;
 
     const booking = await createNewBooking({
@@ -61,15 +70,19 @@ export async function POST(req: NextRequest) {
       alamat: data.alamat,
       lokasiPickup: data.lokasiPickup,
       tanggalPickup: data.tanggalPickup,
-      durasiBulan: data.durasiBulan,
+      durasiBulan: quotation.durasiBulan,
+      tipeDurasi,
+      durasiNilai,
+      labelDurasi: quotation.labelDurasi,
       kategori: klasifikasi.kategori,
       totalHarga: quotation.totalHarga,
       status: 'APPROVED',
       items: data.items,
       quotation: {
-        hargaPerBulan: quotation.hargaPerBulan,
+        hargaPerBulan: quotation.hargaPerSatuan,
         totalHarga: quotation.totalHarga,
         isCustom: false,
+        labelDurasi: quotation.labelDurasi,
       },
     });
 

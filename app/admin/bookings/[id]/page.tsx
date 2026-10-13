@@ -2,17 +2,28 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AdminBookingDetail({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const id = resolvedParams.id;
 
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedSession = localStorage.getItem('safetitip_admin_session');
+      if (!savedSession) {
+        router.push('/admin/login');
+      }
+    }
+  }, [router]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
   const [catatan, setCatatan] = useState('');
@@ -176,8 +187,9 @@ export default function AdminBookingDetail({
               </div>
 
               <div>
-                <p className="text-xs text-slate-400 font-semibold">Durasi Penitipan</p>
-                <p className="font-extrabold text-slate-900 text-base mt-1">{booking.durasiBulan} Bulan</p>
+                <p className="font-extrabold text-slate-900 text-base mt-1">
+                  {booking.labelDurasi || booking.quotation?.labelDurasi || `${booking.durasiBulan} Bulan`}
+                </p>
               </div>
 
               <div>

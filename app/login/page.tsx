@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signInWithPopup } from 'firebase/auth';
@@ -11,6 +11,15 @@ export default function LoginPage() {
 
   // Mode Antarmuka: 'LOGIN' (Masuk) atau 'REGISTER' (Daftar)
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'register') {
+        setAuthMode('REGISTER');
+      }
+    }
+  }, []);
 
   // State Input Mode Masuk (Login) - Kosong tanpa data demo
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -915,8 +924,13 @@ export default function LoginPage() {
       </main>
 
       {/* Footer Minimalis */}
-      <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-200/60 bg-white">
+      <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-200/60 bg-white flex flex-col sm:flex-row items-center justify-center gap-2">
         <p>© 2026 SafeTitip Padang. Penitipan & Ekspedisi Terpercaya.</p>
+        <span className="hidden sm:inline text-slate-300">•</span>
+        <Link href="/admin/login" className="text-slate-500 hover:text-blue-600 font-semibold transition-colors flex items-center gap-1">
+          <span className="material-symbols-outlined text-[14px]">shield_person</span>
+          <span>Portal Petugas & Admin</span>
+        </Link>
       </footer>
     </div>
   );

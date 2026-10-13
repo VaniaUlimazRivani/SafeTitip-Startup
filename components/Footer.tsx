@@ -35,7 +35,7 @@ export default function Footer() {
           <div className="space-y-2.5">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">Akses Internal</h4>
             <ul className="space-y-1.5 text-xs">
-              <li><Link href="/admin" className="text-blue-400 hover:text-blue-300 font-semibold">Dashboard Admin</Link></li>
+              <li><Link href="/admin/login" className="text-blue-400 hover:text-blue-300 font-semibold">Portal Login Admin</Link></li>
               <li><span className="text-slate-500">Cakupan Wilayah: Kota Padang (UNAND, UNP, UPI YPTK, UBH) & Sekitarnya</span></li>
               <li><span className="text-slate-500">Layanan: Jemput Kamar & Antar Kembali</span></li>
             </ul>
