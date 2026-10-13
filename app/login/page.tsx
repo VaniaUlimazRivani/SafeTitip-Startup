@@ -79,46 +79,109 @@ export default function LoginPage() {
     setError('');
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-
+    try {
       if (accountType === 'USER') {
-        // Simpan Sesi Pengguna / Mahasiswa
-        const userSession = {
-          role: 'USER',
-          nama: userForm.nama,
-          email: userForm.email,
-          noWa: userForm.noWa,
-          kampus: userForm.kampus,
-          loginAt: new Date().toISOString(),
-        };
+        if (userAuthMode === 'REGISTER') {
+          // Endpoint Registrasi Mahasiswa Baru
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nama: userForm.nama,
+              email: userForm.email,
+              noWa: userForm.noWa,
+              password: userForm.password,
+            }),
+          });
 
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Gagal melakukan pendaftaran');
+          }
+
+          // Simpan sesi user dari response MongoDB Atlas
+          const userSession = {
+            id: data.user.id,
+            role: 'USER',
+            nama: data.user.nama,
+            email: data.user.email,
+            noWa: data.user.noWa,
+            kampus: userForm.kampus,
+            loginAt: new Date().toISOString(),
+          };
+
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
+          }
+
+          setSuccess(true);
+          setTimeout(() => {
+            router.push('/booking');
+          }, 700);
+        } else {
+          // Endpoint Login Mahasiswa
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: userForm.email,
+              password: userForm.password,
+              accountType: 'USER',
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Email atau password salah');
+          }
+
+          // Simpan sesi user dari response MongoDB Atlas
+          const userSession = {
+            id: data.user.id,
+            role: 'USER',
+            nama: data.user.nama,
+            email: data.user.email,
+            noWa: data.user.noWa,
+            kampus: userForm.kampus,
+            loginAt: new Date().toISOString(),
+          };
+
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
+          }
+
+          setSuccess(true);
+          setTimeout(() => {
+            router.push('/booking');
+          }, 700);
+        }
+      } else {
+        // Endpoint Login Admin / Petugas Operasional
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: adminEmail,
+            password: adminPassword,
+            accountType: 'ADMIN',
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Email atau password admin salah');
         }
 
-        // Langsung arahkan ke halaman booking
-        setTimeout(() => {
-          router.push('/booking');
-        }, 700);
-      } else {
-        // Simpan Sesi Admin / Petugas
         const adminSession = {
-          role: adminRole,
-          email: adminEmail,
-          nama:
-            adminRole === 'ADMIN'
-              ? 'Vania (Super Admin)'
-              : adminRole === 'GUDANG'
-              ? 'Bambang (Petugas Gudang)'
-              : 'Rahmat (Kurir Penjemputan)',
+          id: data.user.id,
+          role: data.user.role,
+          email: data.user.email,
+          nama: data.user.nama,
           loginAt: new Date().toISOString(),
         };
 
@@ -126,12 +189,16 @@ export default function LoginPage() {
           localStorage.setItem('safetitip_admin_session', JSON.stringify(adminSession));
         }
 
-        // Langsung arahkan ke halaman admin
+        setSuccess(true);
         setTimeout(() => {
           router.push('/admin');
         }, 700);
       }
-    }, 600);
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan pada sistem autentikasi');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
