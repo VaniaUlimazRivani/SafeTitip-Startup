@@ -80,6 +80,7 @@ export async function getBookingById(id: string) {
 }
 
 export async function createNewBooking(payload: {
+  userId?: string;
   nama: string;
   noWa: string;
   alamat?: string;
@@ -100,20 +101,33 @@ export async function createNewBooking(payload: {
   const now = new Date();
 
   try {
-    const user = await prisma.user.create({
-      data: {
-        nama: payload.nama,
-        noWa: payload.noWa,
-        alamat: payload.lokasiPickup || '',
-      },
-    });
+    let finalUserId = payload.userId;
+
+    if (finalUserId) {
+      // Pastikan user memang ada di MongoDB
+      const existingUser = await prisma.user.findUnique({ where: { id: finalUserId } });
+      if (!existingUser) {
+        finalUserId = undefined;
+      }
+    }
+
+    if (!finalUserId) {
+      const user = await prisma.user.create({
+        data: {
+          nama: payload.nama,
+          noWa: payload.noWa,
+          alamat: payload.lokasiPickup || '',
+        },
+      });
+      finalUserId = user.id;
+    }
 
     const isCustom = payload.kategori === 'CUSTOM';
 
     const booking = await prisma.booking.create({
       data: {
         kodeBooking: kode,
-        userId: user.id,
+        userId: finalUserId,
         kategori: payload.kategori,
         durasiBulan: payload.durasiBulan,
         totalHarga: payload.totalHarga,
