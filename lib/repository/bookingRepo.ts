@@ -82,7 +82,6 @@ export async function getBookingById(id: string) {
 export async function createNewBooking(payload: {
   nama: string;
   noWa: string;
-  persona?: string;
   alamat?: string;
   lokasiPickup?: string;
   tanggalPickup: string;
@@ -105,7 +104,6 @@ export async function createNewBooking(payload: {
       data: {
         nama: payload.nama,
         noWa: payload.noWa,
-        persona: payload.persona || 'Mahasiswa',
         alamat: payload.lokasiPickup || '',
       },
     });
@@ -178,7 +176,6 @@ export async function createNewBooking(payload: {
         id: newId,
         nama: payload.nama,
         noWa: payload.noWa,
-        persona: payload.persona || 'Mahasiswa',
         alamat: payload.lokasiPickup || '',
       },
       items: payload.items.map((it, idx) => ({

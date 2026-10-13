@@ -13,8 +13,6 @@ model User {
   email     String?   @unique
   password  String?
   noWa      String    @map("no_wa")
-  kampus    String?
-  persona   String?   @default("Mahasiswa")
   alamat    String?
   createdAt DateTime  @default(now()) @map("created_at")
   bookings  Booking[]

@@ -5,7 +5,6 @@ export const bookingSchema = z.object({
   noWa: z
     .string()
     .regex(/^08\d{8,12}$/, 'No WA tidak valid (format 08xxx)'),
-  persona: z.string().optional(),
   alamat: z.string().optional(),
   tanggalPickup: z.string().refine((val) => {
     // Parse tanggal dengan aman tanpa bias UTC

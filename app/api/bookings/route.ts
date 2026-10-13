@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
       const booking = await createNewBooking({
         nama: data.nama,
         noWa: data.noWa,
-        persona: data.persona,
         alamat: data.alamat,
         lokasiPickup: data.lokasiPickup,
         tanggalPickup: data.tanggalPickup,
@@ -57,7 +56,6 @@ export async function POST(req: NextRequest) {
     const booking = await createNewBooking({
       nama: data.nama,
       noWa: data.noWa,
-      persona: data.persona,
       alamat: data.alamat,
       lokasiPickup: data.lokasiPickup,
       tanggalPickup: data.tanggalPickup,
