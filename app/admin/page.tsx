@@ -9,7 +9,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Filter & Pencarian
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
   }, []);
 
   // Update Status Booking (Memenuhi Skenario A-05)
-  const handleUpdateStatus = async (id: number, statusBaru: string) => {
+  const handleUpdateStatus = async (id: string, statusBaru: string) => {
     setUpdatingId(id);
     try {
       const res = await fetch(`/api/bookings/${id}/status`, {
