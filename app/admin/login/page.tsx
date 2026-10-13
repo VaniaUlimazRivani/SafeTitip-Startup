@@ -17,8 +17,8 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Submit Login Admin
-  const handleAdminLogin = (e: React.FormEvent) => {
+  // Submit Login Admin ke MongoDB Atlas
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -32,33 +32,28 @@ export default function AdminLoginPage() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      // Validasi kredensial admin
-      const validAdmins = ['admin@safetitip.com', 'admin', 'vania', 'petugas', 'gudang', 'kurir'];
-      const isValidUser = validAdmins.includes(cleanIdentifier) || cleanIdentifier.endsWith('@safetitip.com');
-      const isValidPassword = cleanPassword === 'admin' || cleanPassword === 'admin123' || cleanPassword === 'safetitip2026';
+    try {
+      const email = cleanIdentifier.includes('@') ? cleanIdentifier : `${cleanIdentifier}@safetitip.com`;
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password: cleanPassword,
+          accountType: 'ADMIN',
+        }),
+      });
 
-      if (!isValidUser && !isValidPassword) {
-        if (cleanPassword.length < 4) {
-          setError('Kredensial tidak valid. Silakan gunakan akun admin resmi.');
-          setLoading(false);
-          return;
-        }
-      }
-
-      let adminName = 'Vania (Super Admin)';
-      if (selectedRole === 'GUDANG' || cleanIdentifier.includes('gudang')) {
-        adminName = 'Staf Operasional Gudang';
-      } else if (selectedRole === 'KURIR' || cleanIdentifier.includes('kurir')) {
-        adminName = 'Petugas Kurir Penjemputan';
-      } else if (cleanIdentifier.includes('vania')) {
-        adminName = 'Vania (Super Admin)';
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Kredensial admin salah.');
       }
 
       const adminSession = {
-        nama: adminName,
-        role: selectedRole,
-        email: cleanIdentifier.includes('@') ? cleanIdentifier : `${cleanIdentifier}@safetitip.com`,
+        id: data.user?.id,
+        nama: data.user?.nama,
+        role: data.user?.role || selectedRole,
+        email: data.user?.email,
         loginAt: new Date().toISOString(),
       };
 
@@ -67,12 +62,14 @@ export default function AdminLoginPage() {
       }
 
       setSuccess(true);
-      setLoading(false);
-
       setTimeout(() => {
         router.push('/admin');
       }, 600);
-    }, 450);
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan saat masuk.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fillQuickPreset = (role: 'ADMIN' | 'GUDANG' | 'KURIR') => {
@@ -82,10 +79,10 @@ export default function AdminLoginPage() {
       setPassword('admin123');
     } else if (role === 'GUDANG') {
       setIdentifier('gudang@safetitip.com');
-      setPassword('admin123');
+      setPassword('gudang123');
     } else {
       setIdentifier('kurir@safetitip.com');
-      setPassword('admin123');
+      setPassword('kurir123');
     }
     setError('');
   };
