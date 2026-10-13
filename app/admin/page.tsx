@@ -27,16 +27,16 @@ export default function AdminDashboard() {
           setCurrentUser({ nama: 'Vania (Super Admin)', role: 'ADMIN' });
         }
       } else {
-        setCurrentUser({ nama: 'Vania (Super Admin)', role: 'ADMIN' });
+        router.push('/admin/login');
       }
     }
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('safetitip_admin_session');
     }
-    router.push('/login');
+    router.push('/admin/login');
   };
 
   const fetchBookings = async () => {
@@ -461,7 +461,9 @@ export default function AdminDashboard() {
                           >
                             Kat {b.kategori}
                           </span>
-                          <p className="text-xs text-slate-600 mt-1 font-semibold">{b.durasiBulan} Bulan</p>
+                          <p className="text-xs text-slate-600 mt-1 font-semibold">
+                            {b.labelDurasi || b.quotation?.labelDurasi || `${b.durasiBulan} Bulan`}
+                          </p>
                         </td>
 
                         {/* Barang */}

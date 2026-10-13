@@ -87,6 +87,9 @@ export async function createNewBooking(payload: {
   lokasiPickup?: string;
   tanggalPickup: string;
   durasiBulan: number;
+  tipeDurasi?: string;
+  durasiNilai?: number;
+  labelDurasi?: string;
   kategori: string;
   totalHarga: number;
   status: string;
@@ -95,6 +98,7 @@ export async function createNewBooking(payload: {
     hargaPerBulan: number;
     totalHarga: number;
     isCustom?: boolean;
+    labelDurasi?: string;
   };
 }) {
   const kode = generateKodeBooking();
@@ -180,6 +184,9 @@ export async function createNewBooking(payload: {
       userId: newId,
       kategori: payload.kategori,
       durasiBulan: payload.durasiBulan,
+      tipeDurasi: payload.tipeDurasi || 'BULAN',
+      durasiNilai: payload.durasiNilai || payload.durasiBulan,
+      labelDurasi: payload.labelDurasi || `${payload.durasiBulan} Bulan`,
       totalHarga: payload.totalHarga,
       status: payload.status,
       tanggalPickup: new Date(payload.tanggalPickup).toISOString(),

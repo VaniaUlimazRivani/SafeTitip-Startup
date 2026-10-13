@@ -4,7 +4,7 @@ import { hitungQuotation } from '@/lib/services/quotationService';
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, durasiBulan } = await req.json();
+    const { items, durasiBulan, tipeDurasi, durasiNilai } = await req.json();
     const klasifikasi = klasifikasiBarang(items);
 
     if (klasifikasi.kategori === 'REJECT') {
@@ -22,9 +22,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const durasi = Number(durasiNilai) || Number(durasiBulan) || 1;
+    const satuan = tipeDurasi || 'BULAN';
+
     const quotation = hitungQuotation(
       klasifikasi.kategori as 'A' | 'B',
-      durasiBulan
+      durasi,
+      satuan
     );
 
     return NextResponse.json({

@@ -11,42 +11,62 @@ export default function FAQPage() {
 
   const categories = [
     { id: 'all', label: 'Semua Pertanyaan', icon: 'apps' },
-    { id: 'jemput', label: 'Penjemputan Kos', icon: 'local_shipping' },
-    { id: 'gudang', label: 'Keamanan Gudang', icon: 'warehouse' },
+    { id: 'jemput', label: 'Penjemputan & Antar', icon: 'local_shipping' },
+    { id: 'gudang', label: 'Keamanan & SOP Gudang', icon: 'warehouse' },
     { id: 'larangan', label: 'Barang Dilarang', icon: 'do_not_disturb' },
-    { id: 'biaya', label: 'Biaya & Diskon', icon: 'payments' },
+    { id: 'biaya', label: 'Tarif & Durasi', icon: 'payments' },
   ];
 
   const faqs = [
     {
       category: 'biaya',
+      q: 'Apakah tersedia durasi penitipan harian dan mingguan?',
+      a: 'Ya, SafeTitip menyediakan paket Harian (1–7 hari), Mingguan (1–4 minggu), dan Bulanan (1–3 bulan). Anda bebas memilih durasi sesuai kebutuhan dinas, libur cuti bersama, maupun libur semester.',
+    },
+    {
+      category: 'biaya',
       q: 'Bagaimana penentuan Kategori A vs Kategori B?',
-      a: 'Kategori A untuk barang berukuran sedang seperti dus buku, dus pakaian, dan elektronik kecil (maks. 3 item). Kategori B untuk barang bervolume besar seperti kulkas mini, kasur lipat, atau volume 4–7 item.',
+      a: 'Kategori A untuk barang berukuran sedang seperti dus buku, dus pakaian, dan koper sedang (maks. 3 item). Kategori B untuk barang bervolume besar seperti kulkas mini, dispenser, kasur lipat, atau jumlah 4–7 item.',
     },
     {
-      category: 'jemput',
-      q: 'Apakah sepeda motor bisa dititipkan di SafeTitip?',
-      a: 'Bisa! Sepeda motor masuk ke skema Custom Quotation. Dilakukan inspeksi fisik STNK, pencatatan kilometer, dan pelepasan aki demi keselamatan.',
+      category: 'gudang',
+      q: 'Apakah kurir atau staf SafeTitip boleh membuka isi koper atau kardus saya?',
+      a: 'Sama sekali tidak boleh. SOP SafeTitip mewajibkan pemilik untuk menutup dan mengemas barangnya sendiri. Kurir hanya memeriksa kondisi fisik luar dan menempelkan segel barcode anti-tamper di hadapan Anda. Hak privasi Anda terlindungi 100%.',
     },
     {
-      category: 'jemput',
-      q: 'Bagaimana proses penjemputan barang di kamar kos?',
-      a: 'Kurir SafeTitip datang langsung ke kamar kos Anda sesuai jadwal. Dilakukan pemasangan segel barcode unik dan foto dokumentasi 360° sebelum barang diangkut.',
+      category: 'gudang',
+      q: 'Bagaimana jika saya ingin mengecek kondisi barang saat sedang di luar kota?',
+      a: 'Tim gudang SafeTitip menyediakan layanan pembaruan berkala (Weekly Status Update) ke WhatsApp Anda secara gratis. Anda juga dapat menghubungi admin kapan saja untuk meminta pengecekan visual.',
     },
     {
-      category: 'larangan',
-      q: 'Barang apa saja yang dilarang untuk dititipkan?',
-      a: 'Sesuai regulasi: makanan basah/basi, uang tunai, perhiasan emas/berlian, hewan peliharaan, senjata tajam, dan narkoba ditolak otomatis oleh sistem.',
+      category: 'gudang',
+      q: 'Apa yang terjadi jika segel barcode rusak saat barang diantar kembali?',
+      a: 'Jika barcode segel tidak cocok atau terindikasi rusak saat serah terima kembali, tim kami langsung memproses investigasi berita acara digital dan klaim kompensasi resmi 1x24 jam sesuai perjanjian.',
     },
     {
       category: 'gudang',
       q: 'Apakah gudang aman dari banjir dan tikus?',
-      a: 'Sangat aman! Seluruh barang dialasi palet kayu berjarak dari lantai semen, ruangan dilengkapi sirkulasi optimal, dan dipantau CCTV 24 jam penuh.',
+      a: 'Sangat aman! Seluruh barang dialasi palet kayu berjarak dari lantai semen, ruangan berventilasi optimal, dan dipantau CCTV 24 jam penuh tanpa jeda.',
     },
     {
       category: 'jemput',
-      q: 'Kapan barang akan diantar kembali ke kos saya?',
-      a: 'Barang diantar kembali tepat saat Anda kembali ke Padang sesuai tanggal selesai sewa atau konfirmasi via WhatsApp admin SafeTitip.',
+      q: 'Bagaimana proses penjemputan barang di lokasi saya?',
+      a: 'Kurir resmi SafeTitip datang langsung ke alamat kos, rumah tinggal, atau kantor Anda di Kota Padang. Dilakukan pemasangan segel barcode unik bersama Anda dan foto dokumentasi 360° sebelum barang diangkut.',
+    },
+    {
+      category: 'jemput',
+      q: 'Apakah sepeda motor bisa dititipkan di SafeTitip?',
+      a: 'Bisa! Sepeda motor masuk ke skema Custom Quotation. Dilakukan inspeksi fisik STNK, pencatatan kilometer, pelepasan aki demi keselamatan, dan penyimpanan di area khusus.',
+    },
+    {
+      category: 'jemput',
+      q: 'Kapan barang akan diantar kembali ke alamat saya?',
+      a: 'Barang diantar kembali tepat saat Anda kembali ke Kota Padang sesuai tanggal selesai sewa yang Anda tentukan atau konfirmasi via WhatsApp admin SafeTitip.',
+    },
+    {
+      category: 'larangan',
+      q: 'Barang apa saja yang dilarang untuk dititipkan?',
+      a: 'Sesuai regulasi keselamatan gudang: makanan/minuman yang mudah busuk, uang tunai, perhiasan emas/berlian, hewan peliharaan hidup, senjata tajam, dan zat kimia berbahaya ditolak oleh sistem.',
     },
   ];
 

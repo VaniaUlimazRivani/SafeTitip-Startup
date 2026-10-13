@@ -30,7 +30,9 @@ export const bookingSchema = z.object({
       })
     )
     .min(1, 'Minimal 1 barang'),
-  durasiBulan: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  durasiBulan: z.coerce.number().min(1).default(1),
+  tipeDurasi: z.enum(['HARI', 'MINGGU', 'BULAN']).default('BULAN'),
+  durasiNilai: z.coerce.number().min(1).default(1),
 });
 
 export type BookingInput = z.infer<typeof bookingSchema>;

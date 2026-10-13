@@ -78,16 +78,16 @@ export default function Navbar() {
 
           {/* Header Right Actions */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {/* Status Akun Pengguna / Mahasiswa */}
+            {/* Status Akun Pengguna / Tombol Masuk */}
             {currentUser ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
-                <span className="material-symbols-outlined text-[18px] text-blue-600">school</span>
+              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900 shadow-2xs">
+                <span className="material-symbols-outlined text-[18px] text-blue-600">person</span>
                 <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
                 <button
                   type="button"
                   onClick={handleUserLogout}
-                  title="Keluar Akun Mahasiswa"
-                  className="p-1 rounded-md hover:bg-blue-200/60 text-slate-400 hover:text-rose-600 transition-colors"
+                  title="Keluar Akun"
+                  className="p-1 rounded-md hover:bg-blue-200/60 text-slate-400 hover:text-rose-600 transition-colors ml-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">logout</span>
                 </button>
@@ -95,40 +95,17 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-xs font-extrabold transition-all"
-                title="Masuk / Daftar Akun Pengguna Mahasiswa"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-xs font-extrabold transition-all shadow-2xs"
+                title="Masuk / Daftar Akun Pengguna"
               >
                 <span className="material-symbols-outlined text-[18px]">account_circle</span>
                 <span>Masuk / Daftar</span>
               </Link>
             )}
-
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all"
-              title="Portal Khusus Petugas / Admin"
-            >
-              <span className="material-symbols-outlined text-[16px]">shield_person</span>
-              <span>Admin</span>
-            </Link>
-
-            <Link
-              href="/booking"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 active:translate-y-0.5 transition-all"
-            >
-              <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-              <span>Booking Slot</span>
-            </Link>
           </div>
 
           {/* Mobile Menu Toggle Button */}
           <div className="flex sm:hidden items-center gap-2">
-            <Link
-              href="/admin"
-              className="p-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold"
-            >
-              Admin
-            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
@@ -188,7 +165,7 @@ export default function Navbar() {
                 className="w-full py-2.5 text-center rounded-xl bg-blue-50 text-blue-700 font-extrabold text-xs flex items-center justify-center gap-1.5 border border-blue-200"
               >
                 <span className="material-symbols-outlined text-[18px]">account_circle</span>
-                <span>Masuk / Daftar Mahasiswa</span>
+                <span>Masuk / Daftar Akun</span>
               </Link>
             )}
 
