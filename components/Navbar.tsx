@@ -163,14 +163,43 @@ export default function Navbar() {
             );
           })}
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
+            {currentUser ? (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
+                <div className="flex items-center gap-2 truncate">
+                  <span className="material-symbols-outlined text-[18px] text-blue-600 shrink-0">school</span>
+                  <span className="truncate">{currentUser.nama}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUserLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1 rounded-md bg-blue-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors text-xs font-bold flex items-center gap-1 shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[15px]">logout</span>
+                  <span>Keluar</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 text-center rounded-xl bg-blue-50 text-blue-700 font-extrabold text-xs flex items-center justify-center gap-1.5 border border-blue-200"
+              >
+                <span className="material-symbols-outlined text-[18px]">account_circle</span>
+                <span>Masuk / Daftar Mahasiswa</span>
+              </Link>
+            )}
+
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
               >
-                <span className="material-symbols-outlined text-[16px]">lock_open</span>
-                <span>Login Admin</span>
+                <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                <span>Portal Petugas</span>
               </Link>
               <Link
                 href="/admin"
@@ -178,7 +207,7 @@ export default function Navbar() {
                 className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>Dashboard</span>
+                <span>Dashboard Admin</span>
               </Link>
             </div>
             <Link
