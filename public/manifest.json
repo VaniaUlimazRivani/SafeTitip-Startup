@@ -1,0 +1,60 @@
+{
+  "name": "SafeTitip Express & Care",
+  "short_name": "SafeTitip",
+  "description": "Layanan penitipan barang aman & terpercaya untuk mahasiswa.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Booking Penitipan",
+      "short_name": "Booking",
+      "description": "Formulir titip barang cepat & aman",
+      "url": "/booking",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Simulasi Harga",
+      "short_name": "Kalkulator",
+      "description": "Hitung estimasi biaya titip barang",
+      "url": "/kalkulator",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "categories": ["utilities", "lifestyle"],
+  "lang": "id-ID"
+}
