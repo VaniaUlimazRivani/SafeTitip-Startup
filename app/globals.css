@@ -125,6 +125,11 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* iOS safe area utility for top bar (notch / Dynamic Island) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 /* Extra height div for home indicator on newer iPhones */
 .h-safe-bottom {
   height: env(safe-area-inset-bottom, 0px);
