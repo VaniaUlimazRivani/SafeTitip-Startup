@@ -153,3 +153,128 @@
 .material-symbols-outlined.filled {
   font-variation-settings: 'FILL' 1, 'wght' 600;
 }
+
+/* ══════════════════════════════════════════════════ */
+/* MOBILE BOTTOM NAV — pure @media, no JS required   */
+/* ══════════════════════════════════════════════════ */
+
+/* Hidden on desktop by default */
+.mobile-bottom-nav,
+.mobile-nav-spacer {
+  display: none;
+}
+
+/* Show only on screens < 1024px (mobile & tablet) */
+@media (max-width: 1023px) {
+
+  /* Spacer to prevent content from going behind nav */
+  .mobile-nav-spacer {
+    display: block;
+    height: 72px;
+  }
+
+  /* The fixed bar itself */
+  .mobile-bottom-nav {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.97);
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Inner flex row */
+  .mobile-bottom-nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 60px;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 8px;
+    position: relative;
+  }
+
+  /* Regular tab item */
+  .mobile-nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    gap: 2px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-tab span:first-child {
+    font-size: 24px;
+    line-height: 1;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    transition: font-variation-settings 0.15s ease;
+  }
+
+  .mobile-nav-tab span:last-child {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  /* Active tab */
+  .mobile-nav-tab.active {
+    color: #2563eb;
+  }
+
+  .mobile-nav-tab.active span:first-child {
+    font-variation-settings: 'FILL' 1, 'wght' 600;
+  }
+
+  /* CENTER FAB wrapper — pushes button above the bar */
+  .mobile-nav-fab-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    margin-top: -22px;
+  }
+
+  /* FAB button */
+  .mobile-nav-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.45);
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-fab:active {
+    transform: scale(0.93);
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+  }
+
+  .mobile-nav-fab.active {
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 0 4px 20px rgba(37, 99, 235, 0.45);
+  }
+
+  .mobile-nav-fab span {
+    font-size: 26px;
+    font-variation-settings: 'FILL' 1, 'wght' 600;
+  }
+}
