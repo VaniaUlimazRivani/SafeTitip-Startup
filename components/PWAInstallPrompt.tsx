@@ -12,7 +12,9 @@ export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
+  // Android: floating banner
+  const [showAndroidBanner, setShowAndroidBanner] = useState(false);
+  // iOS: langsung tampilkan bottom sheet panduan
   const [showIOSModal, setShowIOSModal] = useState(false);
 
   useEffect(() => {
@@ -20,229 +22,207 @@ export default function PWAInstallPrompt() {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((reg) => {
-          console.log('[SafeTitip PWA] Service Worker registered:', reg.scope);
-        })
-        .catch((err) => {
-          console.warn('[SafeTitip PWA] Service Worker registration failed:', err);
-        });
+        .then((reg) => console.log('[SafeTitip PWA] SW registered:', reg.scope))
+        .catch((err) => console.warn('[SafeTitip PWA] SW failed:', err));
     }
 
-    // 2. Check if already installed / running in standalone mode
-    const isStandaloneMode = 
+    // 2. Cek mode standalone (sudah diinstall)
+    const isStandaloneMode =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 
     setIsStandalone(isStandaloneMode);
+    if (isStandaloneMode) return;
 
-    if (isStandaloneMode) {
-      return; // Do not show install prompt if already installed
-    }
-
-    // 3. Check if user dismissed prompt recently (within 3 days)
+    // 3. Cek apakah user sudah dismiss dalam 3 hari terakhir
     const dismissedTime = localStorage.getItem('safetitip_pwa_dismissed');
     if (dismissedTime) {
-      const daysSinceDismiss = (Date.now() - parseInt(dismissedTime, 10)) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismiss < 3) {
-        return;
-      }
+      const daysSince = (Date.now() - parseInt(dismissedTime, 10)) / (1000 * 60 * 60 * 24);
+      if (daysSince < 3) return;
     }
 
-    // 4. Android / Chromium: Listen for beforeinstallprompt event
+    // 4. Android / Chromium: tangkap beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowPrompt(true);
+      // Tunda sedikit agar halaman selesai render
+      setTimeout(() => setShowAndroidBanner(true), 2000);
     };
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // 5. iOS Safari Detection
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-    const isSafari = userAgent.includes('safari') && !userAgent.includes('crios') && !userAgent.includes('fxios');
-
-    if (isIOSDevice && !isStandaloneMode) {
+    // 5. iOS Safari: langsung tampilkan panduan setelah 2 detik
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIOSDevice = /iphone|ipad|ipod/.test(ua);
+    if (isIOSDevice) {
       setIsIOS(true);
-      // Show prompt after a short delay for smooth page experience
       const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 2500);
-
+        setShowIOSModal(true);
+      }, 2000);
       return () => {
         clearTimeout(timer);
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       };
     }
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
-  const handleInstallClick = async () => {
-    if (isIOS) {
-      setShowIOSModal(true);
-      return;
-    }
-
+  // Handler install Android
+  const handleAndroidInstall = async () => {
     if (!deferredPrompt) return;
-
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
     if (outcome === 'accepted') {
-      setShowPrompt(false);
+      setShowAndroidBanner(false);
       setDeferredPrompt(null);
     }
   };
 
   const handleDismiss = () => {
-    setShowPrompt(false);
+    setShowAndroidBanner(false);
     setShowIOSModal(false);
     localStorage.setItem('safetitip_pwa_dismissed', Date.now().toString());
   };
 
-  // If already installed or no prompt needed, render nothing
-  if (isStandalone || !showPrompt) {
-    return null;
-  }
+  // Sudah installed — tidak tampilkan apapun
+  if (isStandalone) return null;
 
   return (
     <>
-      {/* Floating Bottom Install Notification Banner */}
-      <aside 
-        aria-label="PWA Install Notification"
-        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md w-auto animate-bounce-subtle"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-blue-100/80 shadow-blue-500/10 flex items-center gap-3.5 transition-all">
-          
-          {/* App Icon */}
-          <div className="relative w-12 h-12 shrink-0 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center">
-            <Image
-              src="/icons/icon-192x192.png"
-              alt="SafeTitip App Icon"
-              width={48}
-              height={48}
-              className="object-cover"
-            />
-          </div>
-
-          {/* Text Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm text-slate-900 tracking-tight">SafeTitip App</span>
-              <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded-full">PWA</span>
-            </div>
-            <p className="text-xs text-slate-600 line-clamp-1 mt-0.5">
-              {isIOS 
-                ? 'Pasang di iPhone Anda untuk akses lebih cepat' 
-                : 'Install aplikasi untuk booking & pantau penitipan'}
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={handleInstallClick}
-              className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-600/20 transition-transform active:scale-95 flex items-center gap-1 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">download</span>
-              <span>Install</span>
-            </button>
-
-            <button
-              onClick={handleDismiss}
-              aria-label="Tutup notifikasi install"
-              className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* iOS Instruction Modal Popup */}
-      {showIOSModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
-          onClick={() => setShowIOSModal(false)}
+      {/* =========================================================== */}
+      {/* ANDROID: Floating Banner                                    */}
+      {/* =========================================================== */}
+      {showAndroidBanner && (
+        <aside
+          aria-label="Install Aplikasi SafeTitip"
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md animate-bounce-subtle"
         >
-          <div 
-            className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-slate-200 relative animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-md shadow-blue-500/20 bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center">
-                  <Image
-                    src="/icons/icon-192x192.png"
-                    alt="SafeTitip App Icon"
-                    width={48}
-                    height={48}
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">Install SafeTitip di iOS</h3>
-                  <p className="text-xs text-slate-500">Panduan tambah ke layar utama</p>
-                </div>
+          <div className="bg-white/97 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-blue-100/80 flex items-center gap-3.5">
+            <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden shadow-md shadow-blue-500/20">
+              <Image src="/icons/icon-192x192.png" alt="SafeTitip" width={48} height={48} className="object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-sm text-slate-900">SafeTitip App</span>
+                <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded-full">PWA</span>
               </div>
+              <p className="text-xs text-slate-500 mt-0.5">Install aplikasi untuk akses lebih cepat</p>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
-                onClick={() => setShowIOSModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+                onClick={handleAndroidInstall}
+                className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-sky-600 text-white text-xs font-semibold rounded-xl shadow-md active:scale-95 transition-transform flex items-center gap-1 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                <span>Install</span>
+              </button>
+              <button
+                onClick={handleDismiss}
+                aria-label="Tutup"
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
+          </div>
+        </aside>
+      )}
 
-            {/* Steps */}
-            <div className="py-5 space-y-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-100">
-                  1
-                </div>
-                <div className="text-xs text-slate-700">
-                  <p className="font-semibold text-slate-900">Ketuk tombol Bagikan (Share)</p>
-                  <p className="text-slate-500 mt-0.5 flex items-center gap-1">
-                    Cari ikon <span className="material-symbols-outlined text-blue-600 text-[18px]">ios_share</span> di bilah navigasi Safari (bagian bawah iPhone).
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-100">
-                  2
-                </div>
-                <div className="text-xs text-slate-700">
-                  <p className="font-semibold text-slate-900">Pilih &quot;Tambahkan ke Layar Utama&quot;</p>
-                  <p className="text-slate-500 mt-0.5 flex items-center gap-1">
-                    Gulir ke bawah dan ketuk <span className="material-symbols-outlined text-slate-700 text-[18px]">add_box</span> <span className="font-medium text-slate-800">Add to Home Screen</span>.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-100">
-                  3
-                </div>
-                <div className="text-xs text-slate-700">
-                  <p className="font-semibold text-slate-900">Ketuk &quot;Tambah&quot; (Add)</p>
-                  <p className="text-slate-500 mt-0.5">
-                    Klik tombol <strong>Tambah</strong> di sudut kanan atas layar iPhone Anda.
-                  </p>
-                </div>
-              </div>
+      {/* =========================================================== */}
+      {/* iOS: Bottom Sheet Panduan Install — Muncul OTOMATIS         */}
+      {/* =========================================================== */}
+      {isIOS && showIOSModal && (
+        <div
+          className="fixed inset-0 z-[9999] bg-slate-900/50 backdrop-blur-sm flex items-end justify-center animate-fade-in"
+          onClick={handleDismiss}
+        >
+          <div
+            className="bg-white w-full rounded-t-3xl shadow-2xl border border-slate-200/80 animate-slide-up overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-slate-300 rounded-full" />
             </div>
 
-            {/* Footer Action */}
-            <div className="pt-2">
+            <div className="px-6 pb-6 pt-3">
+              {/* Header */}
+              <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-md shadow-blue-500/20 shrink-0">
+                  <Image src="/icons/icon-192x192.png" alt="SafeTitip" width={56} height={56} className="object-cover" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-[17px] text-slate-900 leading-tight">
+                    Pasang SafeTitip<br />di iPhone Anda! 📱
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Akses lebih cepat, tanpa buka browser</p>
+                </div>
+                <button
+                  onClick={handleDismiss}
+                  className="ml-auto w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors shrink-0 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+
+              {/* Steps */}
+              <div className="py-5 space-y-5">
+
+                {/* Step 1 */}
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 rounded-2xl bg-blue-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-md shadow-blue-600/25">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-[14px] text-slate-900">Ketuk tombol <span className="text-blue-600">Bagikan</span></p>
+                    <div className="flex items-center gap-1.5 mt-1.5 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+                      <span className="material-symbols-outlined text-blue-600 text-[22px]">ios_share</span>
+                      <span className="text-xs text-slate-600">
+                        Ikon kotak & panah di toolbar bawah Safari
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 rounded-2xl bg-blue-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-md shadow-blue-600/25">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-[14px] text-slate-900">Pilih <span className="text-blue-600">&quot;Add to Home Screen&quot;</span></p>
+                    <div className="flex items-center gap-1.5 mt-1.5 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+                      <span className="material-symbols-outlined text-slate-700 text-[22px]">add_box</span>
+                      <span className="text-xs text-slate-600">
+                        Tambahkan ke Layar Utama — scroll ke bawah di menu Share
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 rounded-2xl bg-blue-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-md shadow-blue-600/25">
+                    3
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-[14px] text-slate-900">Ketuk <span className="text-blue-600">&quot;Tambah&quot;</span> di pojok kanan atas</p>
+                    <div className="flex items-center gap-1.5 mt-1.5 bg-emerald-50 rounded-xl px-3 py-2 border border-emerald-200">
+                      <span className="material-symbols-outlined text-emerald-600 text-[22px]">check_circle</span>
+                      <span className="text-xs text-emerald-700 font-medium">
+                        Selesai! SafeTitip siap dipakai seperti aplikasi native.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
               <button
                 onClick={handleDismiss}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-2xl transition-colors cursor-pointer"
               >
-                Saya Mengerti
+                Nanti Saja
               </button>
             </div>
           </div>
