@@ -76,8 +76,8 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Header Right Actions */}
-          <div className="hidden sm:flex items-center gap-2.5">
+          {/* Header Right Actions — hanya tampil di layar desktop */}
+          <div className="hidden lg:flex items-center gap-2.5">
             {/* Status Akun Pengguna / Tombol Masuk */}
             {currentUser ? (
               <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900 shadow-2xs">
@@ -104,8 +104,8 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Toggle Button */}
-          <div className="flex sm:hidden items-center gap-2">
+          {/* Mobile Menu Toggle Button — disembunyikan di mobile (diganti bottom nav) */}
+          <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
