@@ -117,3 +117,34 @@
     overflow-x: hidden;
   }
 }
+
+/* ── iOS Safe Area & PWA Standalone Styles ── */
+
+/* iOS safe area utility for bottom nav */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Extra height div for home indicator on newer iPhones */
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
+/* When running as PWA, hide browser scroll-bar-like gap on iOS */
+@media (display-mode: standalone) {
+  html {
+    /* Prevent rubber-band overscroll showing white gap */
+    background-color: #ffffff;
+  }
+
+  /* PWA app-like smooth page feel */
+  body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Active tab icon filled variation — Material Symbols */
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 600;
+}

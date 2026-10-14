@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import MobileAppNav from "@/components/MobileAppNav";
 
 export const viewport: Viewport = {
   themeColor: "#1d4ed8",
@@ -39,7 +40,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="SafeTitip" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <MobileAppNav />
         <PWAInstallPrompt />
       </body>
     </html>
