@@ -125,9 +125,9 @@ export default function AdminLoginPage() {
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
           
           {/* ======================================================================= */}
-          {/* SISI KIRI: PANEL INFORMASI OPERASIONAL (BACKGROUND BIRU PASTEL)         */}
+          {/* SISI KIRI: PANEL INFORMASI OPERASIONAL (HANYA DITAMPILKAN DI DESKTOP)   */}
           {/* ======================================================================= */}
-          <div className="lg:col-span-5 bg-[#edf2fe] border border-blue-100/80 rounded-[32px] p-7 sm:p-9 flex flex-col justify-between shadow-xs">
+          <div className="hidden lg:flex lg:col-span-5 bg-[#edf2fe] border border-blue-100/80 rounded-[32px] p-7 sm:p-9 flex-col justify-between shadow-xs">
             <div>
               {/* Badge Pill Top */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-indigo-700 text-[11px] font-extrabold shadow-2xs border border-indigo-100">
