@@ -25,6 +25,7 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0]">Fitur & Navigasi</h4>
             <ul className="space-y-1.5 text-xs">
               <li><Link href="/" className="hover:text-[#FAF6F0] transition-colors">Beranda Utama</Link></li>
+              <li><Link href="/harga" className="hover:text-[#FAF6F0] transition-colors font-semibold text-[#E69526]">Price List & Komparasi</Link></li>
               <li><Link href="/booking" className="hover:text-[#FAF6F0] transition-colors">Formulir Booking</Link></li>
               <li><Link href="/kalkulator" className="hover:text-[#FAF6F0] transition-colors">Simulasi Biaya</Link></li>
               <li><Link href="/keamanan" className="hover:text-[#FAF6F0] transition-colors">Standar Keamanan SOP</Link></li>

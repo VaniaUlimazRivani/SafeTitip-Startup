@@ -10,8 +10,9 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Beranda', href: '/' },
-    { name: 'Form Booking', href: '/booking' },
+    { name: 'Price List', href: '/harga' },
     { name: 'Simulasi Harga', href: '/kalkulator' },
+    { name: 'Form Booking', href: '/booking' },
     { name: 'Keamanan SOP', href: '/keamanan' },
     { name: 'FAQ', href: '/faq' },
   ];

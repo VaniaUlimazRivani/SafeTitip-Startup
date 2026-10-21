@@ -154,13 +154,13 @@ export default function Home() {
                     <span>Pesan Penjemputan Barang</span>
                   </Link>
 
-                  <a
-                    href="#cara-kerja"
-                    className="inline-flex items-center gap-1.5 px-5 py-4 rounded-2xl font-bold text-sm text-[#705E54] hover:text-[#B86B35] hover:bg-[#F6ECE1] transition-all cursor-pointer"
+                  <Link
+                    href="/harga"
+                    className="inline-flex items-center gap-1.5 px-5 py-4 rounded-2xl font-bold text-sm text-[#705E54] hover:text-[#B86B35] hover:bg-[#F6ECE1] transition-all cursor-pointer border border-transparent hover:border-[#E8DDD3]"
                   >
-                    <span>Pelajari Alur Kerja</span>
-                    <span className="material-symbols-outlined text-[18px]">south</span>
-                  </a>
+                    <span className="material-symbols-outlined text-[18px] text-[#B86B35]">sell</span>
+                    <span>Lihat Price List</span>
+                  </Link>
                 </div>
 
                 {/* Indikator Kepercayaan Singkat */}
@@ -302,7 +302,10 @@ export default function Home() {
 
                 <div className="p-4 rounded-2xl bg-white border border-[#EBD8C6] text-xs text-[#7E3F18] font-bold flex items-center justify-between">
                   <span>Estimasi biaya penitipan Kosinaja:</span>
-                  <span className="text-sm font-extrabold text-[#B86B35]">Mulai Rp 199.000 / paket</span>
+                  <Link href="/harga" className="text-sm font-extrabold text-[#B86B35] hover:underline flex items-center gap-1">
+                    Mulai Rp 10rb/hari atau Rp 199rb/bln
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </Link>
                 </div>
               </div>
             </ScrollReveal>
