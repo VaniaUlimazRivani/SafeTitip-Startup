@@ -269,22 +269,22 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-indigo-600 selection:text-white">
+    <div className="min-h-screen bg-[#FAF6F0] text-[#2A1B14] font-sans flex flex-col justify-between selection:bg-[#B86B35] selection:text-white">
       <Navbar />
 
       <main className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
-        {/* Visual Hero Banner: Penjemputan SafeTitip */}
-        <div className="relative rounded-3xl overflow-hidden border border-slate-200/80 shadow-lg bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white mb-8 group">
+        {/* Visual Hero Banner: Penjemputan Kosinaja */}
+        <div className="relative rounded-3xl overflow-hidden border border-[#E8DDD3] shadow-lg bg-gradient-to-r from-[#B86B35] via-[#A85E2B] to-[#1E1510] text-white mb-8 group">
           <div className="grid grid-cols-1 md:grid-cols-12 items-center">
             <div className="md:col-span-7 p-6 sm:p-8 space-y-3 z-10">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 text-blue-200 text-xs font-extrabold border border-blue-400/30">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-[#FAF6F0] text-xs font-extrabold border border-white/30">
+                <span className="w-2 h-2 rounded-full bg-[#E69526] animate-pulse"></span>
                 Armada Penjemputan Kota Padang Siaga
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                 Kurir Jemput Langsung ke Pintu Lokasi Anda
               </h1>
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#F6ECE1] leading-relaxed">
                 Pilihan durasi fleksibel Harian, Mingguan, dan Bulanan untuk kos mahasiswa, rumah tinggal, maupun kantor di seluruh area Kota Padang.
               </p>
               <div className="flex flex-wrap gap-2.5 pt-2">
@@ -293,11 +293,11 @@ export default function BookingPage() {
                   Harian, Mingguan & Bulanan
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-bold backdrop-blur-md border border-white/15">
-                  <span className="material-symbols-outlined text-sky-400 text-[16px]">photo_camera</span>
+                  <span className="material-symbols-outlined text-[#E69526] text-[16px]">photo_camera</span>
                   Foto Berita Acara Digital
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-bold backdrop-blur-md border border-white/15">
-                  <span className="material-symbols-outlined text-amber-400 text-[16px]">bolt</span>
+                  <span className="material-symbols-outlined text-amber-300 text-[16px]">bolt</span>
                   Hitung Biaya Otomatis
                 </span>
               </div>
@@ -305,11 +305,11 @@ export default function BookingPage() {
             <div className="md:col-span-5 relative h-48 md:h-full min-h-[200px] overflow-hidden">
               <img
                 src="/images/courier.jpg"
-                alt="Kurir SafeTitip Siap Jemput"
+                alt="Kurir Kosinaja Siap Jemput"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-blue-900/90 md:from-blue-900 via-transparent to-transparent"></div>
-              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold text-slate-800 shadow-md">
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#1E1510]/90 md:from-[#1E1510] via-transparent to-transparent"></div>
+              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold text-[#2A1B14] shadow-md">
                 📍 Wilayah Layanan: Kota Padang
               </div>
             </div>
@@ -318,11 +318,11 @@ export default function BookingPage() {
 
         {/* Notifikasi Pengalihan ke Halaman Pendaftaran */}
         {redirectingToRegister && (
-          <div className="mb-6 p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-500/80 shadow-md flex items-center gap-3 animate-pulse text-indigo-950">
-            <span className="material-symbols-outlined text-indigo-600 text-[26px]">account_circle</span>
+          <div className="mb-6 p-4 rounded-2xl bg-[#F6ECE1] border-2 border-[#B86B35]/80 shadow-md flex items-center gap-3 animate-pulse text-[#421E0B]">
+            <span className="material-symbols-outlined text-[#B86B35] text-[26px]">account_circle</span>
             <div className="text-xs sm:text-sm">
               <p className="font-extrabold">Mengarahkan ke Pendaftaran Akun...</p>
-              <p className="text-indigo-800 text-xs">
+              <p className="text-[#7E3F18] text-xs">
                 Data pesanan Anda telah tersimpan sementara dan akan otomatis terisi kembali setelah akun Anda siap.
               </p>
             </div>
@@ -354,23 +354,23 @@ export default function BookingPage() {
             </button>
           </div>
         ) : (
-          <div className="mb-6 p-4 rounded-2xl bg-blue-50/80 border border-blue-200/90 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="mb-6 p-4 rounded-2xl bg-[#F6ECE1]/80 border border-[#EBD8C6] flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-[#B86B35] text-white flex items-center justify-center font-bold shadow-xs">
                 <span className="material-symbols-outlined text-[20px]">info</span>
               </div>
               <div>
-                <p className="font-extrabold text-slate-900 text-sm">
+                <p className="font-extrabold text-[#2A1B14] text-sm">
                   Alur Pemesanan Cepat & Fleksibel
                 </p>
-                <p className="text-slate-600 text-xs mt-0.5">
+                <p className="text-[#705E54] text-xs mt-0.5">
                   Silakan tentukan durasi (harian, mingguan, atau bulanan) dan barang Anda. Jika belum memiliki akun, sistem akan otomatis mengarahkan Anda mendaftar saat menekan tombol pesan.
                 </p>
               </div>
             </div>
             <Link
               href="/login?mode=register&from=booking"
-              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-sm transition-all flex items-center gap-1.5 text-xs"
+              className="px-3.5 py-2 rounded-xl bg-[#B86B35] hover:bg-[#9B5424] text-white font-extrabold shadow-sm transition-all flex items-center gap-1.5 text-xs"
             >
               <span className="material-symbols-outlined text-[16px]">person_add</span>
               <span>Daftar / Masuk Akun</span>
@@ -379,7 +379,7 @@ export default function BookingPage() {
         )}
 
         {/* Form Container */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+        <div className="bg-white rounded-3xl border border-[#E8DDD3] shadow-xl overflow-hidden">
           {result ? (
             /* SUKSES RESULT */
             <div className="p-8 sm:p-12 text-center space-y-6">
@@ -391,13 +391,13 @@ export default function BookingPage() {
                 <span className="px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold uppercase tracking-wide">
                   {result.booking?.kategori === 'CUSTOM' ? 'Kuotasi Khusus Masuk' : 'Masuk Antrean Penjemputan'}
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2A1B14] mt-2">
                   {result.booking?.kategori === 'CUSTOM'
                     ? 'Permintaan Kuotasi Khusus Diterima!'
                     : 'Pesanan Berhasil Masuk Antrean! 🎉'}
                 </h2>
-                <p className="text-sm text-slate-600 max-w-md mx-auto mt-1 leading-relaxed">
-                  Data pemesanan Anda telah tersimpan di sistem SafeTitip. Kurir kami akan segera menghubungi nomor WhatsApp Anda untuk konfirmasi jadwal jemput.
+                <p className="text-sm text-[#705E54] max-w-md mx-auto mt-1 leading-relaxed">
+                  Data pemesanan Anda telah tersimpan di sistem Kosinaja. Kurir kami akan segera menghubungi nomor WhatsApp Anda untuk konfirmasi jadwal jemput.
                 </p>
               </div>
 
@@ -507,7 +507,7 @@ export default function BookingPage() {
                       value={formData.nama}
                       onChange={handleInputChange}
                       placeholder="Nama lengkap Anda..."
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all font-medium"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 focus:border-[#B86B35] transition-all font-medium"
                     />
                   </div>
 
@@ -523,7 +523,7 @@ export default function BookingPage() {
                       value={formData.noWa}
                       onChange={handleInputChange}
                       placeholder="Contoh: 081234567890"
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all font-medium"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 focus:border-[#B86B35] transition-all font-medium"
                     />
                   </div>
                 </div>
@@ -531,8 +531,8 @@ export default function BookingPage() {
 
               {/* Bagian 2: Alamat & Jadwal */}
               <div className="space-y-4">
-                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <span className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+                <h2 className="text-base font-extrabold text-[#2A1B14] flex items-center gap-2 border-b border-[#E8DDD3] pb-2">
+                  <span className="w-6 h-6 rounded-lg bg-[#F6ECE1] text-[#7E3F18] flex items-center justify-center text-xs font-bold">2</span>
                   Lokasi Penjemputan & Durasi Penitipan
                 </h2>
 
@@ -546,7 +546,7 @@ export default function BookingPage() {
                       name="campusArea"
                       value={formData.campusArea}
                       onChange={handleInputChange}
-                      className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+                      className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 font-medium"
                     >
                       <option value="pauh">Pauh & Limau Manis (UNAND / PNP)</option>
                       <option value="padang_utara">Padang Utara & Air Tawar (UNP)</option>
@@ -575,7 +575,7 @@ export default function BookingPage() {
                       min={todayStr}
                       value={formData.tanggalPickup}
                       onChange={handleInputChange}
-                      className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-medium"
+                      className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 font-medium"
                     />
                   </div>
 
@@ -592,7 +592,7 @@ export default function BookingPage() {
                         value={formData.customArea}
                         onChange={handleInputChange}
                         placeholder="Contoh: Bukittinggi, Pariaman, Solok, dll..."
-                        className="w-full h-11 px-3.5 rounded-xl border border-blue-400 bg-blue-50/50 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all font-semibold"
+                        className="w-full h-11 px-3.5 rounded-xl border border-[#EBD8C6] bg-[#F6ECE1]/40 text-[#2A1B14] text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 focus:border-[#B86B35] transition-all font-semibold"
                       />
                     </div>
                   )}
@@ -602,14 +602,14 @@ export default function BookingPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Pilihan Satuan Durasi *
                     </label>
-                    <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-300 h-11 items-center">
+                    <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#F6ECE1]/70 rounded-xl border border-[#E8DDD3] h-11 items-center">
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, tipeDurasi: 'HARI', durasiNilai: 1 })}
                         className={`h-9 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
                           formData.tipeDurasi === 'HARI'
-                            ? 'bg-blue-600 text-white shadow-xs font-extrabold'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                            ? 'bg-[#B86B35] text-white shadow-xs font-extrabold'
+                            : 'text-[#705E54] hover:text-[#2A1B14] hover:bg-[#F6ECE1]'
                         }`}
                       >
                         Harian
@@ -619,8 +619,8 @@ export default function BookingPage() {
                         onClick={() => setFormData({ ...formData, tipeDurasi: 'MINGGU', durasiNilai: 1 })}
                         className={`h-9 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
                           formData.tipeDurasi === 'MINGGU'
-                            ? 'bg-blue-600 text-white shadow-xs font-extrabold'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                            ? 'bg-[#B86B35] text-white shadow-xs font-extrabold'
+                            : 'text-[#705E54] hover:text-[#2A1B14] hover:bg-[#F6ECE1]'
                         }`}
                       >
                         Mingguan
@@ -630,8 +630,8 @@ export default function BookingPage() {
                         onClick={() => setFormData({ ...formData, tipeDurasi: 'BULAN', durasiNilai: 1 })}
                         className={`h-9 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
                           formData.tipeDurasi === 'BULAN'
-                            ? 'bg-blue-600 text-white shadow-xs font-extrabold'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                            ? 'bg-[#B86B35] text-white shadow-xs font-extrabold'
+                            : 'text-[#705E54] hover:text-[#2A1B14] hover:bg-[#F6ECE1]'
                         }`}
                       >
                         Bulanan
@@ -766,15 +766,15 @@ export default function BookingPage() {
               </div>
 
               {/* Bagian 4: LIVE QUOTATION PREVIEW & APPROVAL */}
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-50/80 via-sky-50/50 to-indigo-50/60 border-2 border-blue-200 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-blue-200/80 pb-3">
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#FAF6F0] via-[#F6ECE1]/70 to-[#F6ECE1] border-2 border-[#EBD8C6] shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-[#EBD8C6] pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-blue-700 text-[22px]">price_check</span>
-                    <h3 className="font-extrabold text-slate-900 text-base">
+                    <span className="material-symbols-outlined text-[#B86B35] text-[22px]">price_check</span>
+                    <h3 className="font-extrabold text-[#2A1B14] text-base">
                       Simulasi Biaya & Kategori Otomatis
                     </h3>
                   </div>
-                  <span className="text-[11px] font-extrabold text-blue-700 bg-white px-2.5 py-1 rounded-full border border-blue-200 shadow-xs">
+                  <span className="text-[11px] font-extrabold text-[#7E3F18] bg-white px-2.5 py-1 rounded-full border border-[#EBD8C6] shadow-xs">
                     Transparan & Real-time
                   </span>
                 </div>
@@ -806,21 +806,21 @@ export default function BookingPage() {
 
                 {(liveClassification.kategori === 'A' || liveClassification.kategori === 'B') && (
                   <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-blue-100 shadow-xs">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#EBD8C6] shadow-xs">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hasil Klasifikasi:</span>
                           <span
                             className={`text-xs font-extrabold px-2.5 py-0.5 rounded-md ${
                               liveClassification.kategori === 'A'
-                                ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                                : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                                ? 'bg-[#F6ECE1] text-[#7E3F18] border border-[#EBD8C6]'
+                                : 'bg-[#F6ECE1] text-[#9B5424] border border-[#EBD8C6]'
                             }`}
                           >
                             Kategori {liveClassification.kategori}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-600">{liveClassification.alasan}</p>
+                        <p className="text-xs text-[#705E54]">{liveClassification.alasan}</p>
                         <p className="text-xs text-slate-500 mt-1">
                           Durasi Penitipan: <strong>{liveClassification.quotation?.labelDurasi || `${formData.durasiNilai} ${formData.tipeDurasi === 'HARI' ? 'Hari' : formData.tipeDurasi === 'MINGGU' ? 'Minggu' : 'Bulan'}`}</strong>
                         </p>
@@ -828,7 +828,7 @@ export default function BookingPage() {
 
                       <div className="text-left sm:text-right">
                         <p className="text-xs text-slate-500 uppercase font-semibold">Estimasi Total Biaya</p>
-                        <p className="text-3xl font-extrabold text-blue-700 tracking-tight">
+                        <p className="text-3xl font-extrabold text-[#B86B35] tracking-tight">
                           Rp {liveClassification.quotation?.totalHarga.toLocaleString('id-ID')}
                         </p>
                         <p className="text-[11px] text-slate-500">
@@ -840,7 +840,7 @@ export default function BookingPage() {
                 )}
 
                 {liveClassification.kategori === 'BELUM_ADA' && (
-                  <div className="p-4 rounded-2xl bg-white/70 border border-dashed border-blue-200 text-center text-xs text-slate-500">
+                  <div className="p-4 rounded-2xl bg-white/70 border border-dashed border-[#EBD8C6] text-center text-xs text-[#705E54]">
                     Tuliskan nama barang di atas untuk melihat klasifikasi kategori dan estimasi biaya secara otomatis.
                   </div>
                 )}
@@ -851,10 +851,10 @@ export default function BookingPage() {
                       type="checkbox"
                       checked={agreeTerms}
                       onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 mt-0.5"
+                      className="w-5 h-5 rounded border-slate-300 text-[#B86B35] focus:ring-[#B86B35] mt-0.5"
                     />
-                    <span className="text-xs text-slate-700 font-semibold leading-relaxed">
-                      Saya menyetujui rincian estimasi biaya di atas dan syarat & ketentuan layanan penjemputan SafeTitip.
+                    <span className="text-xs text-[#421E0B] font-semibold leading-relaxed">
+                      Saya menyetujui rincian estimasi biaya di atas dan syarat & ketentuan layanan penjemputan Kosinaja.
                     </span>
                   </label>
                 </div>
@@ -865,7 +865,7 @@ export default function BookingPage() {
                 <button
                   disabled={loading || redirectingToRegister || liveClassification.kategori === 'REJECT' || !agreeTerms}
                   type="submit"
-                  className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 active:translate-y-0.5 transition-all"
+                  className="w-full h-14 rounded-2xl bg-[#B86B35] hover:bg-[#9B5424] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#B86B35]/25 active:translate-y-0.5 transition-all"
                 >
                   <span className="material-symbols-outlined text-[20px]">
                     {currentUser ? 'local_shipping' : 'login'}
