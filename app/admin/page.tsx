@@ -172,7 +172,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl transition-all"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#B86B35] bg-slate-100 hover:bg-[#F6ECE1] px-3 py-2 rounded-xl transition-all"
               >
                 <span className="material-symbols-outlined text-[16px]">arrow_back</span>
                 <span>Ke Beranda</span>
@@ -181,12 +181,12 @@ export default function AdminDashboard() {
               <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
               
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white shadow-md shadow-[#B86B35]/20 font-bold">
                   <span className="material-symbols-outlined text-[22px]">admin_panel_settings</span>
                 </div>
                 <div>
                   <h1 className="text-lg font-extrabold text-slate-900 leading-tight">Dashboard Operasional</h1>
-                  <p className="text-[11px] text-slate-500 font-semibold">SafeTitip Express & Care Padang</p>
+                  <p className="text-[11px] text-slate-500 font-semibold">Kosinaja Padang (kosinaja.id)</p>
                 </div>
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
 
               {/* User Avatar Chip */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
-                <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-extrabold flex items-center justify-center text-xs">
+                <div className="w-7 h-7 rounded-lg bg-[#B86B35] text-white font-extrabold flex items-center justify-center text-xs">
                   {currentUser?.nama ? currentUser.nama[0] : 'V'}
                 </div>
                 <div className="text-left">
