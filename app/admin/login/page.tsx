@@ -88,21 +88,21 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fcfdff] text-slate-900 flex flex-col justify-between selection:bg-indigo-600 selection:text-white font-sans">
+    <div className="min-h-screen bg-[#FAF6F0] text-[#2A1B14] flex flex-col justify-between selection:bg-[#B86B35] selection:text-white font-sans">
       {/* ========================================================================= */}
       {/* 1. HEADER ATAS MINIMALIS                                                  */}
       {/* ========================================================================= */}
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-md px-6 py-4">
+      <header className="border-b border-[#E8DDD3] bg-white/90 backdrop-blur-md px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white shadow-md shadow-[#B86B35]/25 group-hover:scale-105 transition-transform">
               <span className="material-symbols-outlined text-[20px]">inventory_2</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none group-hover:text-blue-600 transition-colors">
-                Safe<span className="text-blue-600">Titip</span>
+              <span className="font-extrabold text-xl tracking-tight text-[#2A1B14] leading-none group-hover:text-[#B86B35] transition-colors">
+                Kos<span className="text-[#B86B35]">inaja</span>
               </span>
-              <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 mt-1">
+              <span className="text-[9px] uppercase font-bold tracking-wider text-[#7E3F18] mt-1">
                 Portal Petugas & Admin
               </span>
             </div>
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
 
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#705E54] hover:text-[#B86B35] transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
             <span>Kembali ke Beranda</span>
@@ -119,74 +119,74 @@ export default function AdminLoginPage() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. MAIN LAYOUT: DUA KARTU SEPERTI HALAMAN LOGIN PENGGUNA                  */}
+      {/* 2. MAIN LAYOUT                                                            */}
       {/* ========================================================================= */}
       <main className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full flex-1 flex items-center justify-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
           
           {/* ======================================================================= */}
-          {/* SISI KIRI: PANEL INFORMASI OPERASIONAL (BACKGROUND BIRU PASTEL)         */}
+          {/* SISI KIRI: PANEL INFORMASI OPERASIONAL (BACKGROUND KRAFT BOX)           */}
           {/* ======================================================================= */}
-          <div className="lg:col-span-5 bg-[#edf2fe] border border-blue-100/80 rounded-[32px] p-7 sm:p-9 flex flex-col justify-between shadow-xs">
+          <div className="lg:col-span-5 bg-[#F6ECE1] border border-[#E8DDD3] rounded-[32px] p-7 sm:p-9 flex flex-col justify-between shadow-xs">
             <div>
               {/* Badge Pill Top */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-indigo-700 text-[11px] font-extrabold shadow-2xs border border-indigo-100">
-                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-[#7E3F18] text-[11px] font-extrabold shadow-2xs border border-[#E8DDD3]">
+                <span className="w-2 h-2 rounded-full bg-[#B86B35] animate-pulse"></span>
                 <span>INTERNAL MANAGEMENT PORTAL</span>
               </div>
 
               {/* Main Headline */}
-              <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight mt-6">
+              <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#2A1B14] tracking-tight leading-tight mt-6">
                 Kelola Titipan Aman,<br />
-                <span className="text-indigo-600">Cepat & Terpadu.</span>
+                <span className="text-[#B86B35]">Cepat & Terpadu.</span>
               </h2>
 
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-3 font-normal">
-                Sistem kendali operasional SafeTitip untuk monitoring barang titipan, alokasi rak penyimpanan, dan koordinasi armada penjemputan.
+              <p className="text-xs sm:text-sm text-[#705E54] leading-relaxed mt-3 font-normal">
+                Sistem kendali operasional Kosinaja untuk monitoring barang titipan mahasiswa, alokasi rak gudang, dan koordinasi armada penjemputan di Padang.
               </p>
 
-              {/* 3 Kartu Keunggulan Operasional (Murni Desain UI Tanpa Gambar Apapun) */}
+              {/* 3 Kartu Keunggulan Operasional */}
               <div className="space-y-3.5 mt-7">
                 {/* 1. Manajemen Booking Terpusat */}
-                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-[#E8DDD3] flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#B86B35] flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[22px]">checklist</span>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#2A1B14]">
                       Verifikasi Booking Cepat
                     </h3>
-                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                    <p className="text-[11px] text-[#705E54] leading-relaxed mt-0.5">
                       Tinjau rincian barang, estimasi biaya, dan jadwal penjemputan mahasiswa secara langsung.
                     </p>
                   </div>
                 </div>
 
                 {/* 2. Standar Keamanan & Gudang */}
-                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-[#E8DDD3] flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#E69526] flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[22px]">warehouse</span>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#2A1B14]">
                       Alokasi Rak & Segel Gudang
                     </h3>
-                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                    <p className="text-[11px] text-[#705E54] leading-relaxed mt-0.5">
                       Catat nomor rak penyimpanan dan pembaruan berkala kondisi barang selama liburan.
                     </p>
                   </div>
                 </div>
 
                 {/* 3. Koordinasi Penjemputan Kurir */}
-                <div className="bg-white rounded-2xl p-4 shadow-xs border border-blue-50/80 flex items-start gap-3.5 transition-all hover:shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <div className="bg-white rounded-2xl p-4 shadow-xs border border-[#E8DDD3] flex items-start gap-3.5 transition-all hover:shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF6F0] text-[#7E3F18] flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[22px]">local_shipping</span>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#2A1B14]">
                       Status Logistik Real-Time
                     </h3>
-                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                    <p className="text-[11px] text-[#705E54] leading-relaxed mt-0.5">
                       Ubah status pesanan dari Menunggu, Disimpan di Gudang, hingga Selesai dengan 1-klik.
                     </p>
                   </div>
@@ -195,16 +195,16 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Bottom Badge Info */}
-            <div className="mt-7 w-full py-3.5 px-4 rounded-2xl bg-indigo-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg shadow-indigo-600/25">
+            <div className="mt-7 w-full py-3.5 px-4 rounded-2xl bg-[#B86B35] text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg shadow-[#B86B35]/25">
               <span className="material-symbols-outlined text-[20px] text-white">admin_panel_settings</span>
-              <span>Akses Khusus Tim Operasional SafeTitip</span>
+              <span>Akses Khusus Tim Operasional Kosinaja</span>
             </div>
           </div>
 
           {/* ======================================================================= */}
-          {/* SISI KANAN: FORM MASUK ADMIN (PERSIS DENGAN KARTU LOGIN PENGGUNA)       */}
+          {/* SISI KANAN: FORM MASUK ADMIN                                            */}
           {/* ======================================================================= */}
-          <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-[32px] p-7 sm:p-10 shadow-xl shadow-slate-200/40 flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-white border border-[#E8DDD3] rounded-[32px] p-7 sm:p-10 shadow-xl shadow-stone-200/40 flex flex-col justify-between">
             <div>
               {/* Error Alert */}
               {error && (
@@ -224,14 +224,14 @@ export default function AdminLoginPage() {
 
               {/* Logo Di Atas Form */}
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white shadow-md shadow-[#B86B35]/25">
                   <span className="material-symbols-outlined text-[22px]">shield_person</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">
-                    Safe<span className="text-blue-600">Titip</span>
+                  <span className="font-extrabold text-xl tracking-tight text-[#2A1B14] leading-none">
+                    Kos<span className="text-[#B86B35]">inaja</span>
                   </span>
-                  <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 mt-1">
+                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#7E3F18] mt-1">
                     Internal Dashboard
                   </span>
                 </div>
@@ -239,17 +239,17 @@ export default function AdminLoginPage() {
 
               {/* Judul & Deskripsi Header Form */}
               <div className="mt-5">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2A1B14] tracking-tight">
                   Portal Masuk Admin
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
-                  Masukkan kredensial resmi untuk mengelola operasional penitipan SafeTitip.
+                <p className="text-xs sm:text-sm text-[#705E54] mt-1.5 leading-relaxed">
+                  Masukkan kredensial resmi untuk mengelola operasional penitipan Kosinaja.
                 </p>
               </div>
 
               {/* Role Switcher */}
               <div className="mt-6 space-y-1.5">
-                <label className="block text-xs font-extrabold text-slate-700">
+                <label className="block text-xs font-extrabold text-[#2A1B14]">
                   Pilih Peran Petugas:
                 </label>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -258,8 +258,8 @@ export default function AdminLoginPage() {
                     onClick={() => fillQuickPreset('ADMIN')}
                     className={`py-2.5 px-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       selectedRole === 'ADMIN'
-                        ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 font-extrabold shadow-2xs ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 bg-[#f8faff] text-slate-600 hover:bg-slate-100 font-semibold text-xs'
+                        ? 'border-[#B86B35] bg-[#F6ECE1] text-[#7E3F18] font-extrabold shadow-2xs ring-2 ring-[#B86B35]/20'
+                        : 'border-[#E8DDD3] bg-white text-[#705E54] hover:bg-[#FAF6F0] font-semibold text-xs'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
@@ -271,8 +271,8 @@ export default function AdminLoginPage() {
                     onClick={() => fillQuickPreset('GUDANG')}
                     className={`py-2.5 px-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       selectedRole === 'GUDANG'
-                        ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 font-extrabold shadow-2xs ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 bg-[#f8faff] text-slate-600 hover:bg-slate-100 font-semibold text-xs'
+                        ? 'border-[#B86B35] bg-[#F6ECE1] text-[#7E3F18] font-extrabold shadow-2xs ring-2 ring-[#B86B35]/20'
+                        : 'border-[#E8DDD3] bg-white text-[#705E54] hover:bg-[#FAF6F0] font-semibold text-xs'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">warehouse</span>
@@ -284,8 +284,8 @@ export default function AdminLoginPage() {
                     onClick={() => fillQuickPreset('KURIR')}
                     className={`py-2.5 px-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       selectedRole === 'KURIR'
-                        ? 'border-indigo-600 bg-indigo-50/70 text-indigo-700 font-extrabold shadow-2xs ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 bg-[#f8faff] text-slate-600 hover:bg-slate-100 font-semibold text-xs'
+                        ? 'border-[#B86B35] bg-[#F6ECE1] text-[#7E3F18] font-extrabold shadow-2xs ring-2 ring-[#B86B35]/20'
+                        : 'border-[#E8DDD3] bg-white text-[#705E54] hover:bg-[#FAF6F0] font-semibold text-xs'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">local_shipping</span>
@@ -298,11 +298,11 @@ export default function AdminLoginPage() {
               <form onSubmit={handleAdminLogin} className="mt-5 space-y-4">
                 {/* Field: Alamat Email / Username */}
                 <div>
-                  <label className="block text-xs font-extrabold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-extrabold text-[#2A1B14] mb-1.5">
                     Email atau Username Petugas
                   </label>
-                  <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                  <div className="relative rounded-2xl overflow-hidden bg-white border border-[#E8DDD3] hover:border-[#B86B35]/40 focus-within:border-[#B86B35] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#B86B35]/15 transition-all">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#705E54]">
                       <span className="material-symbols-outlined text-[20px]">account_circle</span>
                     </div>
                     <input
@@ -311,18 +311,18 @@ export default function AdminLoginPage() {
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder="admin@safetitip.com"
                       required
-                      className="w-full pl-11 pr-4 py-3 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
+                      className="w-full pl-11 pr-4 py-3 bg-transparent text-sm font-semibold text-[#2A1B14] placeholder:text-stone-400 outline-hidden"
                     />
                   </div>
                 </div>
 
                 {/* Field: Kata Sandi + Toggle Mata */}
                 <div>
-                  <label className="block text-xs font-extrabold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-extrabold text-[#2A1B14] mb-1.5">
                     Kata Sandi Petugas
                   </label>
-                  <div className="relative rounded-2xl overflow-hidden bg-[#f8faff] border border-slate-200 hover:border-slate-300 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                  <div className="relative rounded-2xl overflow-hidden bg-white border border-[#E8DDD3] hover:border-[#B86B35]/40 focus-within:border-[#B86B35] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#B86B35]/15 transition-all">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#705E54]">
                       <span className="material-symbols-outlined text-[20px]">lock</span>
                     </div>
                     <input
@@ -331,13 +331,13 @@ export default function AdminLoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="w-full pl-11 pr-11 py-3 bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-hidden"
+                      className="w-full pl-11 pr-11 py-3 bg-transparent text-sm font-semibold text-[#2A1B14] placeholder:text-stone-400 outline-hidden"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label="Toggle Password Visibility"
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#705E54] hover:text-[#B86B35] transition-colors cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[20px]">
                         {showPassword ? 'visibility_off' : 'visibility'}
@@ -348,16 +348,16 @@ export default function AdminLoginPage() {
 
                 {/* Row: Ingat Saya & Lupa Kata Sandi */}
                 <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 font-semibold hover:text-slate-800">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-[#705E54] font-semibold hover:text-[#2A1B14]">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                      className="w-4 h-4 rounded text-[#B86B35] border-[#E8DDD3] focus:ring-[#B86B35] cursor-pointer"
                     />
                     <span>Ingat Saya</span>
                   </label>
-                  <span className="text-slate-500">
+                  <span className="text-[#705E54]">
                     Akses Khusus Terdaftar
                   </span>
                 </div>
@@ -366,7 +366,7 @@ export default function AdminLoginPage() {
                 <button
                   type="submit"
                   disabled={loading || success}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-extrabold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-[#B86B35] hover:bg-[#9B5424] active:scale-[0.99] text-white font-extrabold text-sm shadow-lg shadow-[#B86B35]/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {loading ? (
                     <>
@@ -383,22 +383,22 @@ export default function AdminLoginPage() {
               </form>
 
               {/* Preset Info Hint */}
-              <div className="mt-5 p-3 rounded-2xl bg-[#edf2fe] border border-blue-100 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-white text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <div className="mt-5 p-3 rounded-2xl bg-[#F6ECE1] border border-[#E8DDD3] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white text-[#B86B35] flex items-center justify-center shrink-0 shadow-2xs">
                   <span className="material-symbols-outlined text-[18px]">key</span>
                 </div>
-                <div className="text-[11px] text-slate-600 leading-snug">
-                  <span className="font-extrabold text-slate-900 block">Kredensial Pengujian Otomatis</span>
-                  <span>Email: <strong className="text-slate-800">admin@safetitip.com</strong> • Sandi: <strong className="text-slate-800">admin123</strong></span>
+                <div className="text-[11px] text-[#705E54] leading-snug">
+                  <span className="font-extrabold text-[#2A1B14] block">Kredensial Pengujian Otomatis</span>
+                  <span>Email: <strong className="text-[#2A1B14]">admin@safetitip.com</strong> • Sandi: <strong className="text-[#2A1B14]">admin123</strong></span>
                 </div>
               </div>
 
             </div>
 
             {/* Bottom Trust Badge */}
-            <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500 flex items-center justify-center gap-1.5">
+            <div className="mt-6 pt-4 border-t border-[#E8DDD3] text-center text-xs text-[#705E54] flex items-center justify-center gap-1.5">
               <span className="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
-              <span>Koneksi Aman & Terotentikasi ke Database SafeTitip</span>
+              <span>Koneksi Aman & Terotentikasi ke Database Kosinaja</span>
             </div>
           </div>
 
@@ -408,8 +408,8 @@ export default function AdminLoginPage() {
       {/* ========================================================================= */}
       {/* 3. FOOTER MINIMALIS                                                       */}
       {/* ========================================================================= */}
-      <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-200/60 bg-white">
-        <p>© 2026 SafeTitip Padang • Portal Operasional & Admin Internal.</p>
+      <footer className="py-4 text-center text-xs text-[#705E54] border-t border-[#E8DDD3] bg-white">
+        <p>© 2026 Kosinaja Padang (kosinaja.id) • Portal Operasional & Admin Internal.</p>
       </footer>
     </div>
   );
