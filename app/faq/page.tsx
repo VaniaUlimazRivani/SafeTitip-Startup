@@ -21,7 +21,7 @@ export default function FAQPage() {
     {
       category: 'biaya',
       q: 'Apakah tersedia durasi penitipan harian dan mingguan?',
-      a: 'Ya, SafeTitip menyediakan paket Harian (1–7 hari), Mingguan (1–4 minggu), dan Bulanan (1–3 bulan). Anda bebas memilih durasi sesuai kebutuhan dinas, libur cuti bersama, maupun libur semester.',
+      a: 'Ya, Kosinaja menyediakan paket Harian (1–7 hari), Mingguan (1–4 minggu), dan Bulanan (1–3 bulan). Anda bebas memilih durasi sesuai kebutuhan dinas, libur cuti bersama, maupun libur semester.',
     },
     {
       category: 'biaya',
@@ -30,13 +30,13 @@ export default function FAQPage() {
     },
     {
       category: 'gudang',
-      q: 'Apakah kurir atau staf SafeTitip boleh membuka isi koper atau kardus saya?',
-      a: 'Sama sekali tidak boleh. SOP SafeTitip mewajibkan pemilik untuk menutup dan mengemas barangnya sendiri. Kurir hanya memeriksa kondisi fisik luar dan menempelkan segel barcode anti-tamper di hadapan Anda. Hak privasi Anda terlindungi 100%.',
+      q: 'Apakah kurir atau staf Kosinaja boleh membuka isi koper atau kardus saya?',
+      a: 'Sama sekali tidak boleh. SOP Kosinaja mewajibkan pemilik untuk menutup dan mengemas barangnya sendiri. Kurir hanya memeriksa kondisi fisik luar dan menempelkan segel barcode anti-tamper di hadapan Anda. Hak privasi Anda terlindungi 100%.',
     },
     {
       category: 'gudang',
       q: 'Bagaimana jika saya ingin mengecek kondisi barang saat sedang di luar kota?',
-      a: 'Tim gudang SafeTitip menyediakan layanan pembaruan berkala (Weekly Status Update) ke WhatsApp Anda secara gratis. Anda juga dapat menghubungi admin kapan saja untuk meminta pengecekan visual.',
+      a: 'Tim gudang Kosinaja menyediakan layanan pembaruan berkala (Weekly Status Update) ke WhatsApp Anda secara gratis. Anda juga dapat menghubungi admin kapan saja untuk meminta pengecekan visual.',
     },
     {
       category: 'gudang',
@@ -51,17 +51,17 @@ export default function FAQPage() {
     {
       category: 'jemput',
       q: 'Bagaimana proses penjemputan barang di lokasi saya?',
-      a: 'Kurir resmi SafeTitip datang langsung ke alamat kos, rumah tinggal, atau kantor Anda di Kota Padang. Dilakukan pemasangan segel barcode unik bersama Anda dan foto dokumentasi 360° sebelum barang diangkut.',
+      a: 'Kurir resmi Kosinaja datang langsung ke alamat kos, rumah tinggal, atau kantor Anda di Kota Padang. Dilakukan pemasangan segel barcode unik bersama Anda dan foto dokumentasi 360° sebelum barang diangkut.',
     },
     {
       category: 'jemput',
-      q: 'Apakah sepeda motor bisa dititipkan di SafeTitip?',
+      q: 'Apakah sepeda motor bisa dititipkan di Kosinaja?',
       a: 'Bisa! Sepeda motor masuk ke skema Custom Quotation. Dilakukan inspeksi fisik STNK, pencatatan kilometer, pelepasan aki demi keselamatan, dan penyimpanan di area khusus.',
     },
     {
       category: 'jemput',
       q: 'Kapan barang akan diantar kembali ke alamat saya?',
-      a: 'Barang diantar kembali tepat saat Anda kembali ke Kota Padang sesuai tanggal selesai sewa yang Anda tentukan atau konfirmasi via WhatsApp admin SafeTitip.',
+      a: 'Barang diantar kembali tepat saat Anda kembali ke Kota Padang sesuai tanggal selesai sewa yang Anda tentukan atau konfirmasi via WhatsApp admin Kosinaja.',
     },
     {
       category: 'larangan',
@@ -79,20 +79,20 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#FAF6F0] text-[#2A1B14] font-sans flex flex-col justify-between selection:bg-[#B86B35] selection:text-white">
       <Navbar />
 
       <main className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-12">
         {/* Header */}
         <div className="text-center max-w-xl mx-auto space-y-2">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-extrabold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F6ECE1] text-[#7E3F18] text-xs font-extrabold uppercase tracking-wider border border-[#EBD8C6]">
             <span className="material-symbols-outlined text-[16px]">help</span>
             Pusat Bantuan Cepat
           </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2A1B14] tracking-tight">
             FAQ & Panduan Titip
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-[#705E54]">
             Temukan jawaban lengkap seputar penjemputan, keamanan gudang, dan barang yang diizinkan.
           </p>
         </div>
@@ -108,35 +108,35 @@ export default function FAQPage() {
                 <span className="material-symbols-outlined text-[22px]">check_circle</span>
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-base">Barang Diperbolehkan</h3>
-                <p className="text-[11px] text-emerald-700 font-bold">100% Layanan SafeTitip Melindungi</p>
+                <h3 className="font-extrabold text-[#2A1B14] text-base">Barang Diperbolehkan</h3>
+                <p className="text-[11px] text-emerald-700 font-bold">100% Layanan Kosinaja Melindungi</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>📚</span>
-                <span className="font-bold text-slate-800">Dus Buku & Dokumen</span>
+                <span className="font-bold text-[#2A1B14]">Dus Buku & Dokumen</span>
               </div>
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>👕</span>
-                <span className="font-bold text-slate-800">Pakaian & Sepatu</span>
+                <span className="font-bold text-[#2A1B14]">Pakaian & Sepatu</span>
               </div>
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>❄️</span>
-                <span className="font-bold text-slate-800">Kulkas Mini Kos</span>
+                <span className="font-bold text-[#2A1B14]">Kulkas Mini Kos</span>
               </div>
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>🛏️</span>
-                <span className="font-bold text-slate-800">Kasur Lipat / Busa</span>
+                <span className="font-bold text-[#2A1B14]">Kasur Lipat / Busa</span>
               </div>
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>💨</span>
-                <span className="font-bold text-slate-800">Kipas Angin / Dispenser</span>
+                <span className="font-bold text-[#2A1B14]">Kipas Angin / Dispenser</span>
               </div>
               <div className="p-3 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center gap-2">
                 <span>🏍️</span>
-                <span className="font-bold text-slate-800">Sepeda Motor (+STNK)</span>
+                <span className="font-bold text-[#2A1B14]">Sepeda Motor (+STNK)</span>
               </div>
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function FAQPage() {
                 <span className="material-symbols-outlined text-[22px]">cancel</span>
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-base">Barang Dilarang Keras</h3>
+                <h3 className="font-extrabold text-[#2A1B14] text-base">Barang Dilarang Keras</h3>
                 <p className="text-[11px] text-rose-700 font-bold">Ditolak Otomatis oleh SOP Keamanan</p>
               </div>
             </div>
@@ -193,8 +193,8 @@ export default function FAQPage() {
                 onClick={() => setActiveCategory(c.id as any)}
                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-extrabold transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 scale-105'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    ? 'bg-[#B86B35] text-white shadow-md shadow-[#B86B35]/25 scale-105'
+                    : 'bg-white text-[#705E54] border border-[#E8DDD3] hover:bg-[#F6ECE1]'
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">{c.icon}</span>
@@ -211,22 +211,22 @@ export default function FAQPage() {
             return (
               <div
                 key={idx}
-                className="rounded-2xl bg-white border border-slate-200/90 shadow-2xs overflow-hidden transition-all"
+                className="rounded-2xl bg-white border border-[#E8DDD3] shadow-2xs overflow-hidden transition-all"
               >
                 <button
                   type="button"
                   onClick={() => toggleAccordion(idx)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+                  className="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-[#FAF6F0] transition-colors"
                 >
-                  <span className="font-extrabold text-slate-900 text-sm flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+                  <span className="font-extrabold text-[#2A1B14] text-sm flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-lg bg-[#F6ECE1] text-[#B86B35] flex items-center justify-center text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
                     <span>{f.q}</span>
                   </span>
                   <span
-                    className={`material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-300 ${
-                      isOpen ? 'rotate-180 text-blue-600' : ''
+                    className={`material-symbols-outlined text-[#705E54] text-[20px] transition-transform duration-300 ${
+                      isOpen ? 'rotate-180 text-[#B86B35]' : ''
                     }`}
                   >
                     keyboard_arrow_down
@@ -234,7 +234,7 @@ export default function FAQPage() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs text-slate-600 leading-relaxed pl-14 border-t border-slate-100 bg-slate-50/50">
+                  <div className="px-5 pb-5 pt-1 text-xs text-[#705E54] leading-relaxed pl-14 border-t border-[#E8DDD3] bg-[#FAF6F0]/50">
                     {f.a}
                   </div>
                 )}
@@ -244,15 +244,15 @@ export default function FAQPage() {
         </div>
 
         {/* Interactive Action Banner */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 text-white text-center space-y-4 shadow-xl">
+        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#B86B35] via-[#A85E2B] to-[#1E1510] text-white text-center space-y-4 shadow-xl">
           <h3 className="font-extrabold text-2xl sm:text-3xl">Sudah Siap Titip Barang Kos Anda?</h3>
-          <p className="text-xs sm:text-sm text-blue-100 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-[#F6ECE1] max-w-md mx-auto">
             Hanya butuh 2 menit untuk melengkapi form dan kurir kami siap menjemput barang di kamar kos Anda di Padang.
           </p>
           <div className="pt-2">
             <Link
               href="/booking"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white text-blue-900 font-extrabold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white text-[#7E3F18] font-extrabold text-sm shadow-lg hover:bg-[#FAF6F0] hover:scale-105 active:scale-95 transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">calendar_today</span>
               <span>Buka Form Booking Sekarang</span>
