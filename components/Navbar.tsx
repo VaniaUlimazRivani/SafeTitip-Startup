@@ -43,21 +43,21 @@ export default function Navbar() {
           
           {/* Logo Brand */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white shadow-md shadow-[#B86B35]/25 group-hover:scale-105 transition-transform">
               <span className="material-symbols-outlined text-[26px]">inventory_2</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-2xl tracking-tight text-slate-900 leading-none group-hover:text-blue-600 transition-colors">
-                Safe<span className="text-blue-600">Titip</span>
+              <span className="font-extrabold text-2xl tracking-tight text-[#2A1B14] leading-none group-hover:text-[#B86B35] transition-colors">
+                Kos<span className="text-[#B86B35]">inaja</span>
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-600 mt-1">
-                Express & Care • MVP Pilot
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#705E54] mt-1">
+                Jasa Titip Barang • Padang
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-full border border-slate-200/60">
+          <nav className="hidden lg:flex items-center gap-1 bg-[#F6ECE1]/80 p-1.5 rounded-full border border-[#E8DDD3]">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -66,8 +66,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`px-4 py-2 text-sm font-semibold rounded-full transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-blue-700 hover:bg-white'
+                      ? 'bg-[#B86B35] text-white shadow-xs'
+                      : 'text-[#421E0B] hover:text-[#B86B35] hover:bg-white'
                   }`}
                 >
                   {link.name}
@@ -80,14 +80,14 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-2.5">
             {/* Status Akun Pengguna / Tombol Masuk */}
             {currentUser ? (
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900 shadow-2xs">
-                <span className="material-symbols-outlined text-[18px] text-blue-600">person</span>
+              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6ECE1] border border-[#EBD8C6] text-xs font-bold text-[#622F12] shadow-2xs">
+                <span className="material-symbols-outlined text-[18px] text-[#B86B35]">person</span>
                 <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
                 <button
                   type="button"
                   onClick={handleUserLogout}
                   title="Keluar Akun"
-                  className="p-1 rounded-md hover:bg-blue-200/60 text-slate-400 hover:text-rose-600 transition-colors ml-1"
+                  className="p-1 rounded-md hover:bg-[#EBD8C6] text-[#705E54] hover:text-rose-600 transition-colors ml-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">logout</span>
                 </button>
@@ -95,7 +95,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-xs font-extrabold transition-all shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[#7E3F18] bg-[#F6ECE1] hover:bg-[#EBD8C6] border border-[#DCBEA3] text-xs font-extrabold transition-all shadow-2xs"
                 title="Masuk / Daftar Akun Pengguna"
               >
                 <span className="material-symbols-outlined text-[18px]">account_circle</span>
@@ -131,19 +131,19 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-[#B86B35] text-white'
+                    : 'text-[#421E0B] hover:bg-[#F6ECE1]'
                 }`}
               >
                 {link.name}
               </Link>
             );
           })}
-          <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
+          <div className="pt-2 border-t border-[#E8DDD3] flex flex-col gap-2">
             {currentUser ? (
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F6ECE1] border border-[#EBD8C6] text-xs font-bold text-[#622F12]">
                 <div className="flex items-center gap-2 truncate">
-                  <span className="material-symbols-outlined text-[18px] text-blue-600 shrink-0">school</span>
+                  <span className="material-symbols-outlined text-[18px] text-[#B86B35] shrink-0">school</span>
                   <span className="truncate">{currentUser.nama}</span>
                 </div>
                 <button
@@ -152,7 +152,7 @@ export default function Navbar() {
                     handleUserLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="px-2.5 py-1 rounded-md bg-blue-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors text-xs font-bold flex items-center gap-1 shrink-0"
+                  className="px-2.5 py-1 rounded-md bg-[#EBD8C6] hover:bg-rose-100 text-[#705E54] hover:text-rose-600 transition-colors text-xs font-bold flex items-center gap-1 shrink-0"
                 >
                   <span className="material-symbols-outlined text-[15px]">logout</span>
                   <span>Keluar</span>
@@ -162,7 +162,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-2.5 text-center rounded-xl bg-blue-50 text-blue-700 font-extrabold text-xs flex items-center justify-center gap-1.5 border border-blue-200"
+                className="w-full py-2.5 text-center rounded-xl bg-[#F6ECE1] text-[#7E3F18] font-extrabold text-xs flex items-center justify-center gap-1.5 border border-[#DCBEA3]"
               >
                 <span className="material-symbols-outlined text-[18px]">account_circle</span>
                 <span>Masuk / Daftar Akun</span>
@@ -173,15 +173,15 @@ export default function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+                className="py-2.5 text-center rounded-xl bg-[#F6ECE1]/60 hover:bg-[#F6ECE1] text-[#421E0B] font-bold text-xs flex items-center justify-center gap-1.5 border border-[#E8DDD3]"
               >
-                <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                <span className="material-symbols-outlined text-[16px] text-[#B86B35]">shield_person</span>
                 <span>Portal Petugas</span>
               </Link>
               <Link
                 href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-2.5 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+                className="py-2.5 text-center rounded-xl bg-[#F6ECE1]/60 hover:bg-[#F6ECE1] text-[#421E0B] font-bold text-xs flex items-center justify-center gap-1.5 border border-[#E8DDD3]"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span>Dashboard Admin</span>
@@ -190,7 +190,7 @@ export default function Navbar() {
             <Link
               href="/booking"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-2.5 text-center rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md"
+              className="w-full py-2.5 text-center rounded-xl bg-[#B86B35] hover:bg-[#9B5424] text-white font-bold text-sm shadow-md shadow-[#B86B35]/20"
             >
               Booking Slot Penjemputan
             </Link>
