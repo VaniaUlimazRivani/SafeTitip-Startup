@@ -33,6 +33,16 @@ export const bookingSchema = z.object({
   durasiBulan: z.coerce.number().min(1).default(1),
   tipeDurasi: z.enum(['HARI', 'MINGGU', 'BULAN']).default('BULAN'),
   durasiNilai: z.coerce.number().min(1).default(1),
+  metodePickup: z.enum(['PICKUP', 'SELF_DROPOFF']).default('PICKUP'),
+  metodeDelivery: z.enum(['DELIVERY', 'SELF_PICKUP']).default('DELIVERY'),
+  jarakKm: z.coerce.number().optional(),
+  ongkirPickup: z.coerce.number().optional().default(0),
+  ongkirDelivery: z.coerce.number().optional().default(0),
+  totalOngkir: z.coerce.number().optional().default(0),
+  surchargeKategori: z.coerce.number().optional().default(0),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
+  mapsUrl: z.string().optional(),
 });
 
 export type BookingInput = z.infer<typeof bookingSchema>;

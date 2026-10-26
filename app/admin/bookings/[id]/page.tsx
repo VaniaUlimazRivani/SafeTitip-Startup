@@ -167,6 +167,20 @@ export default function AdminBookingDetail({
               <div>
                 <p className="text-xs text-slate-400 font-semibold">Alamat / Lokasi Kos</p>
                 <p className="text-slate-700 mt-0.5 font-medium">{booking.lokasiPickup || '-'}</p>
+                {booking.mapsUrl && (
+                  <div className="pt-2">
+                    <a
+                      href={booking.mapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#F6ECE1] hover:bg-[#EBD8C6] text-[#7E3F18] font-black text-xs border border-[#DCBEA3] transition-colors shadow-2xs"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-[#B86B35]">navigation</span>
+                      <span>Rute Google Maps ({booking.jarakKm || 0} km dari Hub)</span>
+                      <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -175,7 +189,7 @@ export default function AdminBookingDetail({
           <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
             <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
               <span className="material-symbols-outlined text-blue-600 text-[20px]">receipt_long</span>
-              Paket & Estimasi Biaya
+              Paket & Rincian Biaya Ongkir
             </h3>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -187,8 +201,27 @@ export default function AdminBookingDetail({
               </div>
 
               <div>
+                <p className="text-xs text-slate-400 font-semibold">Durasi Penitipan</p>
                 <p className="font-extrabold text-slate-900 text-base mt-1">
                   {booking.labelDurasi || booking.quotation?.labelDurasi || `${booking.durasiBulan} Bulan`}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-400 font-semibold">Metode Penjemputan</p>
+                <p className="font-bold text-slate-800 text-xs mt-1">
+                  {booking.metodePickup === 'PICKUP'
+                    ? `Dijemput Kurir (Rp ${(booking.ongkirPickup || 0).toLocaleString('id-ID')})`
+                    : 'Antar Sendiri ke Gudang (Rp 0)'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-400 font-semibold">Metode Pengantaran</p>
+                <p className="font-bold text-slate-800 text-xs mt-1">
+                  {booking.metodeDelivery === 'DELIVERY'
+                    ? `Diantar Kembali (Rp ${(booking.ongkirDelivery || 0).toLocaleString('id-ID')})`
+                    : 'Ambil Sendiri di Gudang (Rp 0)'}
                 </p>
               </div>
 
@@ -207,12 +240,17 @@ export default function AdminBookingDetail({
               </div>
 
               <div>
-                <p className="text-xs text-slate-400 font-semibold">Estimasi Total</p>
-                <p className="font-extrabold text-emerald-600 text-xl mt-1">
+                <p className="text-xs text-slate-400 font-semibold">Total Biaya Akhir</p>
+                <p className="font-extrabold text-[#B86B35] text-xl mt-1">
                   {Number(booking.totalHarga) === 0
                     ? 'Custom Nego'
                     : `Rp ${Number(booking.totalHarga).toLocaleString('id-ID')}`}
                 </p>
+                {booking.totalOngkir > 0 && (
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    (Sudah termasuk ongkir: Rp {Number(booking.totalOngkir).toLocaleString('id-ID')})
+                  </p>
+                )}
               </div>
             </div>
           </div>
