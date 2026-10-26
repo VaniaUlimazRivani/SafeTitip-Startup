@@ -25,6 +25,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: klasifikasi.alasan }, { status: 422 });
     }
 
+    // Validasi ulang Ongkir & Jarak di sisi server agar tidak bisa dimanipulasi dari browser
+    if (data.metodePickup === 'PICKUP' || data.metodeDelivery === 'DELIVERY') {
+      if (typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+        return NextResponse.json(
+          { error: 'Koordinat lokasi penjemputan/pengantaran wajib dipilih.' },
+          { status: 400 }
+        );
+      }
+
+      const { kalkulasiOngkirLengkap } = await import('@/lib/services/ongkirService');
+      const serverCalc = kalkulasiOngkirLengkap(
+        { lat: data.latitude, lng: data.longitude },
+        klasifikasi.kategori,
+        data.metodePickup,
+        data.metodeDelivery,
+        data.jarakKm
+      );
+
+      if (serverCalc.isOutOfRange) {
+        return NextResponse.json(
+          {
+            error: `Lokasi (${serverCalc.jarakKm} km) berada di luar batas jangkauan layanan kurir Kosinaja (Maksimal ${serverCalc.maxDistanceKm} km).`,
+          },
+          { status: 422 }
+        );
+      }
+
+      // Terapkan nilai terverifikasi server
+      data.jarakKm = serverCalc.jarakKm;
+      data.ongkirPickup = serverCalc.ongkirPickup;
+      data.ongkirDelivery = serverCalc.ongkirDelivery;
+      data.totalOngkir = serverCalc.totalOngkir;
+      data.surchargeKategori = serverCalc.surchargeKategori;
+      data.mapsUrl = serverCalc.mapsUrl;
+    } else {
+      data.ongkirPickup = 0;
+      data.ongkirDelivery = 0;
+      data.totalOngkir = 0;
+      data.surchargeKategori = 0;
+    }
+
     const labelDurasi = `${durasiNilai} ${tipeDurasi === 'HARI' ? 'Hari' : tipeDurasi === 'MINGGU' ? 'Minggu' : 'Bulan'}`;
 
     if (klasifikasi.kategori === 'CUSTOM') {
@@ -34,13 +75,23 @@ export async function POST(req: NextRequest) {
         noWa: data.noWa,
         alamat: data.alamat,
         lokasiPickup: data.lokasiPickup,
+        metodePickup: data.metodePickup,
+        metodeDelivery: data.metodeDelivery,
+        jarakKm: data.jarakKm,
+        ongkirPickup: data.ongkirPickup,
+        ongkirDelivery: data.ongkirDelivery,
+        totalOngkir: data.totalOngkir,
+        surchargeKategori: data.surchargeKategori,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        mapsUrl: data.mapsUrl,
         tanggalPickup: data.tanggalPickup,
         durasiBulan: data.durasiBulan,
         tipeDurasi,
         durasiNilai,
         labelDurasi,
         kategori: 'CUSTOM',
-        totalHarga: 0,
+        totalHarga: (data.totalOngkir || 0),
         status: 'LEAD',
         items: data.items,
         quotation: {
@@ -63,19 +114,31 @@ export async function POST(req: NextRequest) {
       tipeDurasi
     )!;
 
+    const totalHargaKeseluruhan = quotation.totalHarga + (data.totalOngkir || 0);
+
     const booking = await createNewBooking({
       userId: data.userId,
       nama: data.nama,
       noWa: data.noWa,
       alamat: data.alamat,
       lokasiPickup: data.lokasiPickup,
+      metodePickup: data.metodePickup,
+      metodeDelivery: data.metodeDelivery,
+      jarakKm: data.jarakKm,
+      ongkirPickup: data.ongkirPickup,
+      ongkirDelivery: data.ongkirDelivery,
+      totalOngkir: data.totalOngkir,
+      surchargeKategori: data.surchargeKategori,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      mapsUrl: data.mapsUrl,
       tanggalPickup: data.tanggalPickup,
       durasiBulan: quotation.durasiBulan,
       tipeDurasi,
       durasiNilai,
       labelDurasi: quotation.labelDurasi,
       kategori: klasifikasi.kategori,
-      totalHarga: quotation.totalHarga,
+      totalHarga: totalHargaKeseluruhan,
       status: 'APPROVED',
       items: data.items,
       quotation: {

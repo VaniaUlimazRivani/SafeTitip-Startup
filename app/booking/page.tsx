@@ -8,6 +8,8 @@ import Footer from '@/components/Footer';
 import { klasifikasiBarang } from '@/lib/services/klasifikasiService';
 import { hitungQuotation } from '@/lib/services/quotationService';
 import { TipeDurasi } from '@/lib/constants/harga';
+import LocationPicker from '@/components/LocationPicker';
+import { KalkulasiOngkirResult } from '@/lib/services/ongkirService';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -42,6 +44,27 @@ export default function BookingPage() {
   const [redirectingToRegister, setRedirectingToRegister] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Data Ongkir & Lokasi Google Maps
+  const [ongkirData, setOngkirData] = useState<KalkulasiOngkirResult & { coordinate: { lat: number; lng: number }; alamatDetail: string }>({
+    jarakKm: 1.8,
+    tarifDasarPerTrip: 5000,
+    surchargeKategori: 0,
+    ongkirPerTrip: 5000,
+    metodePickup: 'PICKUP',
+    metodeDelivery: 'DELIVERY',
+    ongkirPickup: 5000,
+    ongkirDelivery: 5000,
+    totalOngkir: 10000,
+    mapsUrl: '',
+    isFreePickup: false,
+    estimasiWaktuMenit: 8,
+    isRealRoute: true,
+    isOutOfRange: false,
+    maxDistanceKm: 35,
+    coordinate: { lat: -0.9250, lng: 100.4420 },
+    alamatDetail: '',
+  });
 
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -230,10 +253,20 @@ export default function BookingPage() {
       ulak_karang: 'Ulak Karang (UBH)',
     };
 
-    const finalArea =
-      formData.campusArea === 'lainnya'
-        ? formData.customArea.trim()
-        : areaLabelMap[formData.campusArea] || formData.campusArea;
+    const finalAlamat = (ongkirData.alamatDetail || formData.lokasiPickup || '').trim();
+    const isKurirNeeded = ongkirData.metodePickup === 'PICKUP' || ongkirData.metodeDelivery === 'DELIVERY';
+
+    if (isKurirNeeded && !finalAlamat) {
+      setError('Harap lengkapi alamat detail penjemputan / pengantaran kos Anda.');
+      return;
+    }
+
+    if (isKurirNeeded && ongkirData.isOutOfRange) {
+      setError(
+        `Lokasi penjemputan/pengantaran (${ongkirData.jarakKm} km) di luar batas operasional kurir Kosinaja (Maksimal ${ongkirData.maxDistanceKm} km). Silakan tentukan lokasi di area Kota Padang atau pilih metode Antar Sendiri ke Gudang.`
+      );
+      return;
+    }
 
     try {
       const res = await fetch('/api/bookings', {
@@ -247,7 +280,17 @@ export default function BookingPage() {
           tipeDurasi: (formData as any).tipeDurasi,
           durasiNilai: Number((formData as any).durasiNilai) || 1,
           durasiBulan: liveClassification.quotation?.durasiBulan || Number(formData.durasiBulan) || 1,
-          lokasiPickup: `[${finalArea}] ${formData.lokasiPickup}`,
+          lokasiPickup: finalAlamat,
+          metodePickup: ongkirData.metodePickup,
+          metodeDelivery: ongkirData.metodeDelivery,
+          jarakKm: ongkirData.jarakKm,
+          ongkirPickup: ongkirData.ongkirPickup,
+          ongkirDelivery: ongkirData.ongkirDelivery,
+          totalOngkir: ongkirData.totalOngkir,
+          surchargeKategori: ongkirData.surchargeKategori,
+          latitude: ongkirData.coordinate.lat,
+          longitude: ongkirData.coordinate.lng,
+          mapsUrl: ongkirData.mapsUrl,
           items: items.map((i) => ({ nama: i.nama.trim(), jumlah: Number(i.jumlah) })),
         }),
       });
@@ -432,11 +475,38 @@ export default function BookingPage() {
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Estimasi Total Biaya:</p>
-                    <p className="font-extrabold text-blue-700 text-base">
+                    <p className="font-extrabold text-[#B86B35] text-base">
                       {result.booking?.totalHarga === 0
                         ? 'Dihubungi Admin'
                         : `Rp ${result.booking?.totalHarga?.toLocaleString('id-ID')}`}
                     </p>
+                  </div>
+                  <div className="col-span-2 pt-2 border-t border-slate-200 text-xs text-slate-600 space-y-1">
+                    <p>
+                      <strong>Metode Penjemputan:</strong>{' '}
+                      {result.booking?.metodePickup === 'PICKUP'
+                        ? `Dijemput Kurir (${result.booking?.jarakKm || 0} km, Ongkir: Rp ${result.booking?.ongkirPickup?.toLocaleString('id-ID') || 0})`
+                        : 'Antar Sendiri ke Gudang (Gratis)'}
+                    </p>
+                    <p>
+                      <strong>Metode Pengembalian:</strong>{' '}
+                      {result.booking?.metodeDelivery === 'DELIVERY'
+                        ? `Diantar Kembali (Ongkir: Rp ${result.booking?.ongkirDelivery?.toLocaleString('id-ID') || 0})`
+                        : 'Ambil Sendiri di Gudang (Gratis)'}
+                    </p>
+                    {result.booking?.mapsUrl && (
+                      <p className="pt-1">
+                        <a
+                          href={result.booking.mapsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 font-bold text-[#B86B35] hover:underline"
+                        >
+                          <span className="material-symbols-outlined text-[15px]">pin_drop</span>
+                          <span>Buka Titik Lokasi di Google Maps</span>
+                        </a>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -529,43 +599,17 @@ export default function BookingPage() {
                 </div>
               </div>
 
-              {/* Bagian 2: Alamat & Jadwal */}
-              <div className="space-y-4">
+              {/* Bagian 2: Durasi & Lokasi Penjemputan Google Maps */}
+              <div className="space-y-6">
                 <h2 className="text-base font-extrabold text-[#2A1B14] flex items-center gap-2 border-b border-[#E8DDD3] pb-2">
                   <span className="w-6 h-6 rounded-lg bg-[#F6ECE1] text-[#7E3F18] flex items-center justify-center text-xs font-bold">2</span>
-                  Lokasi Penjemputan & Durasi Penitipan
+                  Durasi Penitipan & Titik Penjemputan Maps
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5" htmlFor="campusArea">
-                      Wilayah / Kecamatan (Kota Padang) *
-                    </label>
-                    <select
-                      id="campusArea"
-                      name="campusArea"
-                      value={formData.campusArea}
-                      onChange={handleInputChange}
-                      className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 font-medium"
-                    >
-                      <option value="pauh">Pauh & Limau Manis (UNAND / PNP)</option>
-                      <option value="padang_utara">Padang Utara & Air Tawar (UNP)</option>
-                      <option value="lubuk_begalung">Lubuk Begalung (UPI YPTK)</option>
-                      <option value="padang_barat">Padang Barat & Ulak Karang (UBH)</option>
-                      <option value="kuranji">Kuranji & Gn. Pangilun (UIN IB / ITP)</option>
-                      <option value="padang_timur">Padang Timur & Sawahan</option>
-                      <option value="nanggalo">Nanggalo & Siteba</option>
-                      <option value="lubuk_kilangan">Lubuk Kilangan & Indarung</option>
-                      <option value="koto_tangah">Koto Tangah & Lubuk Buaya</option>
-                      <option value="padang_selatan">Padang Selatan & Teluk Bayur</option>
-                      <option value="bungus">Bungus Teluk Kabung</option>
-                      <option value="lainnya">Wilayah Lainnya (Ketik Manual)</option>
-                    </select>
-                  </div>
-
-                  <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5" htmlFor="tanggalPickup">
-                      Tanggal Penjemputan *
+                      Tanggal Penjemputan / Mulai Titip *
                     </label>
                     <input
                       id="tanggalPickup"
@@ -578,24 +622,6 @@ export default function BookingPage() {
                       className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 font-medium"
                     />
                   </div>
-
-                  {formData.campusArea === 'lainnya' && (
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5" htmlFor="customArea">
-                        Nama Wilayah / Kecamatan Anda *
-                      </label>
-                      <input
-                        id="customArea"
-                        required
-                        type="text"
-                        name="customArea"
-                        value={formData.customArea}
-                        onChange={handleInputChange}
-                        placeholder="Contoh: Bukittinggi, Pariaman, Solok, dll..."
-                        className="w-full h-11 px-3.5 rounded-xl border border-[#EBD8C6] bg-[#F6ECE1]/40 text-[#2A1B14] text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 focus:border-[#B86B35] transition-all font-semibold"
-                      />
-                    </div>
-                  )}
 
                   {/* Satuan Durasi (Harian, Mingguan, Bulanan) */}
                   <div>
@@ -640,7 +666,7 @@ export default function BookingPage() {
                   </div>
 
                   {/* Jumlah Durasi Sesuai Satuan */}
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5" htmlFor="durasiNilai">
                       Jumlah {formData.tipeDurasi === 'HARI' ? 'Hari (Maks. 7 Hari)' : formData.tipeDurasi === 'MINGGU' ? 'Minggu' : 'Bulan'} *
                     </label>
@@ -680,28 +706,22 @@ export default function BookingPage() {
                         className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 font-semibold"
                       >
                         <option value={1}>1 Bulan (Paket Standar)</option>
-                        <option value={2}>2 Bulan (Paket Hemat)</option>
-                        <option value={3}>3 Bulan (Paket Semester Penuh)</option>
+                        <option value={2}>2 Bulan (Paket Hemat - Diskon Spesial)</option>
+                        <option value={3}>3 Bulan (Paket Semester Penuh - Super Hemat)</option>
                       </select>
                     )}
                   </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5" htmlFor="lokasiPickup">
-                      Alamat Lengkap Penjemputan (Kos, Rumah, atau Kantor) *
-                    </label>
-                    <textarea
-                      id="lokasiPickup"
-                      required
-                      rows={2}
-                      name="lokasiPickup"
-                      value={formData.lokasiPickup}
-                      onChange={handleInputChange}
-                      placeholder="Tuliskan nama jalan, nama kos/kantor, nomor rumah, dan patokan lokasi terdekat..."
-                      className="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 resize-none font-medium"
-                    />
-                  </div>
                 </div>
+
+                {/* Location Picker Component dengan Google Maps & Ongkir Terintegrasi */}
+                <LocationPicker
+                  kategori={liveClassification.kategori}
+                  initialAlamat={formData.lokasiPickup}
+                  onChangeOngkir={(res) => {
+                    setOngkirData(res);
+                    setFormData((prev) => ({ ...prev, lokasiPickup: res.alamatDetail }));
+                  }}
+                />
               </div>
 
               {/* Bagian 3: Daftar Barang */}
@@ -827,13 +847,43 @@ export default function BookingPage() {
                       </div>
 
                       <div className="text-left sm:text-right">
-                        <p className="text-xs text-slate-500 uppercase font-semibold">Estimasi Total Biaya</p>
+                        <p className="text-xs text-slate-500 uppercase font-semibold">Total Biaya Keseluruhan</p>
                         <p className="text-3xl font-extrabold text-[#B86B35] tracking-tight">
-                          Rp {liveClassification.quotation?.totalHarga.toLocaleString('id-ID')}
+                          Rp {((liveClassification.quotation?.totalHarga || 0) + ongkirData.totalOngkir).toLocaleString('id-ID')}
                         </p>
                         <p className="text-[11px] text-slate-500">
-                          (Rp {liveClassification.quotation?.hargaPerSatuan.toLocaleString('id-ID')} / {formData.tipeDurasi === 'HARI' ? 'hari' : formData.tipeDurasi === 'MINGGU' ? 'minggu' : 'bulan'})
+                          (Titip: Rp {liveClassification.quotation?.totalHarga.toLocaleString('id-ID')} + Ongkir: Rp {ongkirData.totalOngkir.toLocaleString('id-ID')})
                         </p>
+                      </div>
+                    </div>
+
+                    {/* Rincian Komponen Biaya */}
+                    <div className="p-3.5 rounded-2xl bg-white/80 border border-[#EBD8C6] grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Biaya Titip Barang:</span>
+                        <span className="font-extrabold text-[#2A1B14]">
+                          Rp {liveClassification.quotation?.totalHarga.toLocaleString('id-ID')}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Ongkir Penjemputan:</span>
+                        <span className="font-extrabold text-[#2A1B14]">
+                          {ongkirData.metodePickup === 'PICKUP'
+                            ? ongkirData.ongkirPickup === 0
+                              ? 'Gratis (≤ 1km)'
+                              : `Rp ${ongkirData.ongkirPickup.toLocaleString('id-ID')}`
+                            : 'Rp 0 (Antar Sendiri)'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Ongkir Pengantaran:</span>
+                        <span className="font-extrabold text-[#2A1B14]">
+                          {ongkirData.metodeDelivery === 'DELIVERY'
+                            ? ongkirData.ongkirDelivery === 0
+                              ? 'Gratis (≤ 1km)'
+                              : `Rp ${ongkirData.ongkirDelivery.toLocaleString('id-ID')}`
+                            : 'Rp 0 (Ambil Sendiri)'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -860,12 +910,30 @@ export default function BookingPage() {
                 </div>
               </div>
 
+              {/* Hidden Inputs untuk Form Submit */}
+              <input type="hidden" name="latitude" value={ongkirData.coordinate.lat} />
+              <input type="hidden" name="longitude" value={ongkirData.coordinate.lng} />
+              <input type="hidden" name="jarakKm" value={ongkirData.jarakKm} />
+              <input type="hidden" name="totalOngkir" value={ongkirData.totalOngkir} />
+
               {/* Submit Button */}
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
+                {((ongkirData.metodePickup === 'PICKUP' || ongkirData.metodeDelivery === 'DELIVERY') && ongkirData.isOutOfRange) && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold text-center">
+                    ⚠️ Lokasi berada di luar batas operasional kurir Kosinaja (Maksimal {ongkirData.maxDistanceKm} km). Silakan tentukan lokasi di Padang atau pilih metode &quot;Antar Sendiri ke Gudang&quot;.
+                  </div>
+                )}
+
                 <button
-                  disabled={loading || redirectingToRegister || liveClassification.kategori === 'REJECT' || !agreeTerms}
+                  disabled={
+                    loading ||
+                    redirectingToRegister ||
+                    liveClassification.kategori === 'REJECT' ||
+                    !agreeTerms ||
+                    ((ongkirData.metodePickup === 'PICKUP' || ongkirData.metodeDelivery === 'DELIVERY') && ongkirData.isOutOfRange)
+                  }
                   type="submit"
-                  className="w-full h-14 rounded-2xl bg-[#B86B35] hover:bg-[#9B5424] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#B86B35]/25 active:translate-y-0.5 transition-all"
+                  className="w-full h-14 rounded-2xl bg-[#B86B35] hover:bg-[#9B5424] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#B86B35]/25 active:translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[20px]">
                     {currentUser ? 'local_shipping' : 'login'}
@@ -875,6 +943,8 @@ export default function BookingPage() {
                       ? 'Memasukkan ke Antrean...'
                       : redirectingToRegister
                       ? 'Mengalihkan ke Pendaftaran Akun...'
+                      : ((ongkirData.metodePickup === 'PICKUP' || ongkirData.metodeDelivery === 'DELIVERY') && ongkirData.isOutOfRange)
+                      ? 'Lokasi di Luar Jangkauan Kurir'
                       : currentUser
                       ? 'Pesan & Masuk Antrean Penjemputan'
                       : 'Pesan Sekarang (Lanjut Daftar Akun)'}

@@ -94,6 +94,16 @@ export async function createNewBooking(payload: {
   totalHarga: number;
   status: string;
   items: Array<{ nama: string; jumlah: number }>;
+  metodePickup?: string;
+  metodeDelivery?: string;
+  jarakKm?: number;
+  ongkirPickup?: number;
+  ongkirDelivery?: number;
+  totalOngkir?: number;
+  surchargeKategori?: number;
+  latitude?: number;
+  longitude?: number;
+  mapsUrl?: string;
   quotation?: {
     hargaPerBulan: number;
     totalHarga: number;
@@ -138,6 +148,16 @@ export async function createNewBooking(payload: {
         status: payload.status,
         tanggalPickup: new Date(payload.tanggalPickup),
         lokasiPickup: payload.lokasiPickup,
+        metodePickup: payload.metodePickup || 'PICKUP',
+        metodeDelivery: payload.metodeDelivery || 'DELIVERY',
+        jarakKm: payload.jarakKm ?? null,
+        ongkirPickup: payload.ongkirPickup ?? 0,
+        ongkirDelivery: payload.ongkirDelivery ?? 0,
+        totalOngkir: payload.totalOngkir ?? 0,
+        surchargeKategori: payload.surchargeKategori ?? 0,
+        latitude: payload.latitude ?? null,
+        longitude: payload.longitude ?? null,
+        mapsUrl: payload.mapsUrl ?? null,
         items: {
           create: payload.items.map((i) => ({
             namaBarang: i.nama,
@@ -163,7 +183,7 @@ export async function createNewBooking(payload: {
             catatan: isCustom ? 'Booking CUSTOM, menunggu admin' : 'Booking dibuat via web',
           },
         },
-      },
+      } as any,
       include: {
         user: true,
         items: true,
@@ -191,6 +211,16 @@ export async function createNewBooking(payload: {
       status: payload.status,
       tanggalPickup: new Date(payload.tanggalPickup).toISOString(),
       lokasiPickup: payload.lokasiPickup,
+      metodePickup: payload.metodePickup || 'PICKUP',
+      metodeDelivery: payload.metodeDelivery || 'DELIVERY',
+      jarakKm: payload.jarakKm ?? null,
+      ongkirPickup: payload.ongkirPickup ?? 0,
+      ongkirDelivery: payload.ongkirDelivery ?? 0,
+      totalOngkir: payload.totalOngkir ?? 0,
+      surchargeKategori: payload.surchargeKategori ?? 0,
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
+      mapsUrl: payload.mapsUrl ?? null,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
       user: {

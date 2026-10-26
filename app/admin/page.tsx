@@ -491,6 +491,18 @@ export default function AdminDashboard() {
                           <p className="text-slate-500 text-[11px] truncate mt-0.5">
                             {b.lokasiPickup || '-'}
                           </p>
+                          {b.mapsUrl && (
+                            <a
+                              href={b.mapsUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#B86B35] hover:underline mt-1"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">pin_drop</span>
+                              <span>Rute Maps ({b.jarakKm || 0} km)</span>
+                              <span className="material-symbols-outlined text-[11px]">open_in_new</span>
+                            </a>
+                          )}
                         </td>
 
                         {/* Total Harga */}
