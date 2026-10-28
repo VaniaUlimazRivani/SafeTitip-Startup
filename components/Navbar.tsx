@@ -78,17 +78,33 @@ export default function Navbar() {
           </nav>
 
           {/* Header Right Actions */}
-          <div className="hidden sm:flex items-center gap-2.5">
+          <div className="hidden sm:flex items-center gap-2">
             {/* Status Akun Pengguna / Tombol Masuk */}
             {currentUser ? (
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F6ECE1] border border-[#EBD8C6] text-xs font-bold text-[#622F12] shadow-2xs">
-                <span className="material-symbols-outlined text-[18px] text-[#B86B35]">person</span>
-                <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/profile"
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all shadow-2xs group ${
+                    pathname === '/profile'
+                      ? 'bg-[#B86B35] text-white border-[#B86B35]'
+                      : 'bg-[#F6ECE1] hover:bg-[#EBD8C6] border-[#EBD8C6] text-[#622F12]'
+                  }`}
+                  title="Buka Profil & Riwayat Penitipan"
+                >
+                  <span
+                    className={`material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform ${
+                      pathname === '/profile' ? 'text-white' : 'text-[#B86B35]'
+                    }`}
+                  >
+                    person
+                  </span>
+                  <span className="max-w-[120px] truncate">{currentUser.nama.split(' ')[0]}</span>
+                </Link>
                 <button
                   type="button"
                   onClick={handleUserLogout}
                   title="Keluar Akun"
-                  className="p-1 rounded-md hover:bg-[#EBD8C6] text-[#705E54] hover:text-rose-600 transition-colors ml-1"
+                  className="p-2 rounded-xl bg-[#F6ECE1] hover:bg-rose-100 text-[#705E54] hover:text-rose-600 border border-[#EBD8C6] transition-colors flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-[16px]">logout</span>
                 </button>
@@ -143,10 +159,14 @@ export default function Navbar() {
           <div className="pt-2 border-t border-[#E8DDD3] flex flex-col gap-2">
             {currentUser ? (
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F6ECE1] border border-[#EBD8C6] text-xs font-bold text-[#622F12]">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="material-symbols-outlined text-[18px] text-[#B86B35] shrink-0">school</span>
-                  <span className="truncate">{currentUser.nama}</span>
-                </div>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 truncate hover:text-[#B86B35]"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#B86B35] shrink-0">person</span>
+                  <span className="truncate">{currentUser.nama} (Profil Saya)</span>
+                </Link>
                 <button
                   type="button"
                   onClick={() => {
