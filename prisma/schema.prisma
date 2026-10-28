@@ -28,6 +28,7 @@ model Booking {
   durasiBulan     Int              @map("durasi_bulan")
   totalHarga      Int              @map("total_harga")
   status          String           @default("LEAD")
+  paymentStatus   String?          @default("UNPAID") @map("payment_status") // UNPAID, PENDING, PAID, FAILED, EXPIRED
   tanggalPickup   DateTime?        @map("tanggal_pickup")
   lokasiPickup    String?          @map("lokasi_pickup")
   metodePickup    String?          @default("PICKUP") @map("metode_pickup")
@@ -52,8 +53,29 @@ model Booking {
   weeklyUpdates   WeeklyUpdate[]
   agreement       Agreement?
   statusLogs      StatusLog[]
+  payment         Payment?
 
   @@map("bookings")
+}
+
+model Payment {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId       String    @unique @map("booking_id") @db.ObjectId
+  orderId         String    @unique @map("order_id")
+  amount          Int
+  status          String    @default("PENDING") // PENDING, SETTLEMENT, EXPIRE, CANCEL, DENY
+  snapToken       String?   @map("snap_token")
+  snapRedirectUrl String?   @map("snap_redirect_url")
+  paymentType     String?   @map("payment_type")
+  transactionTime DateTime? @map("transaction_time")
+  settlementTime  DateTime? @map("settlement_time")
+  rawResponse     String?   @map("raw_response")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  booking         Booking   @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
 }
 
 model BookingItem {
