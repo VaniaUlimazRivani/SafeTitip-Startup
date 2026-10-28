@@ -405,18 +405,19 @@ export default function ProfilePage() {
         </div>
 
         {/* HERO HEADER PROFILE CARD */}
-        <div className="relative overflow-hidden rounded-3xl bg-white border border-[#EBD8C6] shadow-sm mb-8">
+        <div className="relative rounded-3xl bg-white border border-[#EBD8C6] shadow-sm mb-8 overflow-hidden">
           {/* Cover Header Banner */}
-          <div className="h-32 sm:h-44 bg-gradient-to-r from-[#B86B35] via-[#C97B45] to-[#E69526] relative">
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+          <div className="h-28 sm:h-36 bg-gradient-to-r from-[#B86B35] via-[#C97B45] to-[#E69526] relative">
+            <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
           </div>
 
-          <div className="px-6 sm:px-10 pb-6 pt-0">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-16 sm:-mt-20 gap-6">
+          <div className="px-6 sm:px-10 pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
               {/* Avatar & User Details */}
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
-                <div className="relative group">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-[#F6ECE1] to-[#EBD8C6] p-1.5 shadow-xl border-4 border-white">
+                {/* Floating Avatar */}
+                <div className="-mt-14 sm:-mt-16 relative shrink-0">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white p-1.5 shadow-xl border-4 border-white">
                     {currentUser?.photoURL ? (
                       <img
                         src={currentUser.photoURL}
@@ -424,17 +425,21 @@ export default function ProfilePage() {
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white text-4xl font-extrabold shadow-inner">
+                      <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-[#B86B35] to-[#E69526] flex items-center justify-center text-white text-3xl sm:text-4xl font-extrabold shadow-inner">
                         {currentUser?.nama?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
-                  <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white" title="Akun Aktif">
+                  <div
+                    className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white shadow-xs"
+                    title="Akun Aktif"
+                  >
                     <span className="material-symbols-outlined text-[14px]">check</span>
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                {/* User Details - Bersih di bawah banner */}
+                <div className="pt-1 sm:pt-3 space-y-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2A1B14] tracking-tight">
                       {currentUser?.nama || 'Pengguna SafeTitip'}
@@ -444,18 +449,22 @@ export default function ProfilePage() {
                       Mahasiswa Terverifikasi
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-[#705E54] flex items-center justify-center sm:justify-start gap-2">
-                    <span className="material-symbols-outlined text-[16px]">mail</span>
-                    {currentUser?.email || '-'}
-                    <span className="text-slate-300">•</span>
-                    <span className="material-symbols-outlined text-[16px]">phone_iphone</span>
-                    {currentUser?.noWa || 'Belum ada nomor WA'}
-                  </p>
+                  <div className="text-xs sm:text-sm text-[#705E54] flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5">
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[16px] text-[#B86B35]">mail</span>
+                      {currentUser?.email || '-'}
+                    </span>
+                    <span className="text-slate-300 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[16px] text-[#B86B35]">phone_iphone</span>
+                      {currentUser?.noWa || 'Belum ada nomor WA'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Quick Action Buttons */}
-              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <div className="flex items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto pt-2 sm:pt-0">
                 <Link
                   href="/booking"
                   className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-[#B86B35] hover:bg-[#9B5424] text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-[#B86B35]/20 flex items-center justify-center gap-1.5"
