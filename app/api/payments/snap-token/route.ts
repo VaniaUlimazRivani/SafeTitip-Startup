@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { snap, serverKey } from '@/lib/midtrans';
+import { createXenditInvoice } from '@/lib/xendit';
 import { getBookingById, upsertPayment } from '@/lib/repository/bookingRepo';
 
 export async function POST(req: NextRequest) {
@@ -42,77 +42,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Format unique order_id untuk Midtrans (orderId tidak boleh duplicate di Midtrans)
     const suffix = Date.now().toString().slice(-4);
     const orderId = `ST-${booking.kodeBooking}-${suffix}`;
 
     // Siapkan item details
-    const itemDetails: any[] = [];
+    const items: any[] = [];
     if (booking.items && booking.items.length > 0) {
       booking.items.forEach((item: any, idx: number) => {
-        itemDetails.push({
-          id: `ITEM-${idx + 1}`,
-          price: Math.round(grossAmount / booking.items.length),
-          quantity: 1,
+        items.push({
           name: (item.namaBarang || `Barang ${idx + 1}`).substring(0, 50),
+          price: Math.round(grossAmount / booking.items.length),
+          quantity: item.jumlah || 1,
         });
+      });
+    } else {
+      items.push({
+        name: `Penitipan SafeTitip (${booking.kodeBooking})`,
+        price: grossAmount,
+        quantity: 1,
       });
     }
 
-    // Pastikan total itemDetails sama dengan gross_amount jika itemDetails disertakan
-    const itemsTotal = itemDetails.reduce((acc, it) => acc + it.price * it.quantity, 0);
-    const diff = grossAmount - itemsTotal;
-    if (diff !== 0 && itemDetails.length > 0) {
-      itemDetails[0].price += diff;
-    }
-
-    const parameter = {
-      transaction_details: {
-        order_id: orderId,
-        gross_amount: grossAmount,
-      },
-      customer_details: {
-        first_name: booking.user?.nama || 'Pengguna SafeTitip',
-        email: booking.user?.email || 'customer@safetitip.com',
-        phone: booking.user?.noWa || '081234567890',
-        shipping_address: {
-          address: booking.lokasiPickup || booking.user?.alamat || 'Alamat Penjemputan',
-        },
-      },
-      item_details: itemDetails.length > 0 ? itemDetails : undefined,
-    };
-
-    let token = '';
-    let redirectUrl = '';
-
-    // Cek apakah serverKey masih placeholder atau sudah diisi kredensial Midtrans asli
-    const isMockMode = !serverKey || serverKey.includes('placeholder') || serverKey.includes('demo');
-
-    if (isMockMode) {
-      console.warn(
-        '[Midtrans] Menggunakan mode simulasi / mock token karena MIDTRANS_SERVER_KEY belum diisi kunci riil.'
-      );
-      token = `mock_snap_token_${orderId}_${Date.now()}`;
-      redirectUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${token}`;
-    } else {
-      try {
-        const transaction = await snap.createTransaction(parameter);
-        token = transaction.token;
-        redirectUrl = transaction.redirect_url;
-      } catch (snapError: any) {
-        console.error('[Midtrans Error]', snapError);
-        return NextResponse.json(
+    // Buat invoice checkout Xendit
+    const invoice = await createXenditInvoice({
+      externalId: orderId,
+      amount: grossAmount,
+      payerEmail: booking.user?.email || 'customer@kosinaja.id',
+      description: `Pembayaran Penitipan SafeTitip - ${booking.kodeBooking}`,
+      customer: {
+        given_names: booking.user?.nama || 'Mahasiswa SafeTitip',
+        email: booking.user?.email || 'customer@kosinaja.id',
+        mobile_number: booking.user?.noWa || '081234567890',
+        addresses: [
           {
-            success: false,
-            error: snapError.message || 'Gagal membuat transaksi di Midtrans',
-            detail: snapError.ApiResponse || null,
+            street_line1: booking.lokasiPickup || booking.user?.alamat || 'Kota Padang',
+            city: 'Padang',
+            country: 'Indonesia',
           },
-          { status: 502 }
-        );
-      }
-    }
+        ],
+      },
+      items,
+    });
 
-    // Simpan ke database
+    const token = invoice.id;
+    const redirectUrl = invoice.invoice_url;
+
+    // Simpan ke database MongoDB
     await upsertPayment({
       bookingId: booking.id,
       orderId,
@@ -120,14 +95,19 @@ export async function POST(req: NextRequest) {
       status: 'PENDING',
       snapToken: token,
       snapRedirectUrl: redirectUrl,
+      paymentType: 'XENDIT_INVOICE',
+      rawResponse: JSON.stringify(invoice),
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Token pembayaran Midtrans berhasil dibuat.',
+      message: 'Invoice pembayaran Xendit berhasil dibuat.',
       data: {
         token,
         redirectUrl,
+        invoiceUrl: redirectUrl,
+        invoiceId: token,
+        paymentProvider: 'XENDIT',
         orderId,
         grossAmount,
         bookingId: booking.id,
@@ -135,7 +115,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Error saat membuat Snap Token:', error);
+    console.error('Error saat membuat invoice Xendit:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Terjadi kesalahan pada server' },
       { status: 500 }

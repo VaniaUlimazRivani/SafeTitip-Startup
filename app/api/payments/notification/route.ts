@@ -1,91 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyMidtransSignature, serverKey } from '@/lib/midtrans';
+import { verifyXenditWebhook } from '@/lib/xendit';
 import { getBookingByOrderId, upsertPayment } from '@/lib/repository/bookingRepo';
 
 export async function POST(req: NextRequest) {
   try {
+    const callbackTokenHeader = req.headers.get('x-callback-token');
+
+    if (!verifyXenditWebhook(callbackTokenHeader)) {
+      console.warn('[Webhook] Callback token Xendit tidak valid.');
+      return NextResponse.json({ error: 'Unauthorized callback token' }, { status: 401 });
+    }
+
     const notification = await req.json();
 
-    const orderId = notification.order_id;
-    const statusCode = notification.status_code;
-    const grossAmount = notification.gross_amount;
-    const signatureKey = notification.signature_key;
-    const transactionStatus = notification.transaction_status;
-    const fraudStatus = notification.fraud_status;
-    const paymentType = notification.payment_type;
-    const transactionTime = notification.transaction_time ? new Date(notification.transaction_time) : undefined;
-    const settlementTime = notification.settlement_time ? new Date(notification.settlement_time) : undefined;
+    const externalId = notification.external_id || notification.externalId;
+    const status = (notification.status || '').toUpperCase();
+    const paidAmount = notification.paid_amount || notification.amount || 0;
+    const paymentMethod = notification.payment_method || 'XENDIT';
+    const paymentChannel = notification.payment_channel || '';
+    const paidAt = notification.paid_at ? new Date(notification.paid_at) : undefined;
 
-    if (!orderId) {
+    if (!externalId) {
       return NextResponse.json(
-        { error: 'Format notifikasi tidak valid (order_id hilang)' },
+        { error: 'Format webhook tidak valid (external_id hilang)' },
         { status: 400 }
       );
     }
 
-    // Validasi signature kecuali dalam mode mock / testing internal
-    const isMockMode = !serverKey || serverKey.includes('placeholder') || serverKey.includes('demo');
-    if (!isMockMode && signatureKey) {
-      const isValid = verifyMidtransSignature(orderId, statusCode, grossAmount, signatureKey);
-      if (!isValid) {
-        console.warn(`[Midtrans Webhook] Invalid signature key for order ${orderId}`);
-        return NextResponse.json({ error: 'Invalid signature key' }, { status: 403 });
-      }
-    }
-
-    // Cari booking berdasarkan orderId
-    const booking = await getBookingByOrderId(orderId);
+    const booking = await getBookingByOrderId(externalId);
     if (!booking) {
-      console.warn(`[Midtrans Webhook] Booking dengan orderId ${orderId} tidak ditemukan.`);
-      // Tetap kembalikan 200 agar Midtrans tidak retry berulang
-      return NextResponse.json({ message: 'Order tidak ditemukan tetapi notifikasi diterima' });
+      console.warn(`[Webhook Xendit] Booking external_id ${externalId} tidak ditemukan.`);
+      return NextResponse.json({ message: 'Order tidak ditemukan tetapi webhook diterima' });
     }
 
-    // Tentukan status pembayaran akhir
     let finalStatus = 'PENDING';
-
-    if (transactionStatus === 'capture') {
-      if (fraudStatus === 'challenge') {
-        finalStatus = 'CHALLENGE';
-      } else if (fraudStatus === 'accept') {
-        finalStatus = 'SETTLEMENT';
-      }
-    } else if (transactionStatus === 'settlement') {
+    if (status === 'PAID' || status === 'SETTLED') {
       finalStatus = 'SETTLEMENT';
-    } else if (transactionStatus === 'cancel' || transactionStatus === 'deny') {
-      finalStatus = 'CANCEL';
-    } else if (transactionStatus === 'expire') {
+    } else if (status === 'EXPIRED') {
       finalStatus = 'EXPIRE';
-    } else if (transactionStatus === 'pending') {
-      finalStatus = 'PENDING';
+    } else if (status === 'FAILED') {
+      finalStatus = 'DENY';
     }
 
-    // Simpan ke database
     await upsertPayment({
       bookingId: booking.id,
-      orderId,
-      amount: Math.round(Number(grossAmount) || booking.totalHarga),
+      orderId: externalId,
+      amount: Math.round(Number(paidAmount) || booking.totalHarga),
       status: finalStatus,
-      paymentType: paymentType || 'UNKNOWN',
-      transactionTime,
-      settlementTime: finalStatus === 'SETTLEMENT' ? settlementTime || new Date() : undefined,
+      paymentType: paymentChannel ? `${paymentMethod}_${paymentChannel}` : paymentMethod,
+      transactionTime: new Date(),
+      settlementTime: (status === 'PAID' || status === 'SETTLED') ? (paidAt || new Date()) : undefined,
       rawResponse: JSON.stringify(notification),
     });
 
     console.log(
-      `[Midtrans Webhook] Berhasil memproses notifikasi order ${orderId} -> ${finalStatus}`
+      `[Webhook Xendit] Berhasil memproses webhook untuk order ${externalId} -> Status: ${status} (Final: ${finalStatus})`
     );
 
     return NextResponse.json({
       status: 'OK',
-      message: 'Notifikasi berhasil diproses',
-      orderId,
+      message: 'Webhook Xendit berhasil diproses',
+      orderId: externalId,
       finalStatus,
     });
   } catch (error: any) {
-    console.error('Error saat memproses Midtrans notification:', error);
+    console.error('Error saat memproses webhook Xendit:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal server error saat webhook Midtrans' },
+      { error: error.message || 'Internal server error saat webhook' },
       { status: 500 }
     );
   }

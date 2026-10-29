@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { prisma } from '../db';
 import { generateKodeBooking } from '../utils/kodeBooking';
@@ -390,10 +390,14 @@ export async function upsertPayment(payload: {
   const now = new Date();
   const paymentStatusMap: Record<string, string> = {
     settlement: 'PAID',
+    paid: 'PAID',
+    settled: 'PAID',
     capture: 'PAID',
     pending: 'PENDING',
     deny: 'FAILED',
     expire: 'EXPIRED',
+    expired: 'EXPIRED',
+    failed: 'FAILED',
     cancel: 'CANCELLED',
   };
 
@@ -448,8 +452,8 @@ export async function upsertPayment(payload: {
       updateData.statusLogs = {
         create: {
           statusBaru: 'PAID',
-          diubahOleh: 'MIDTRANS_GATEWAY',
-          catatan: `Pembayaran sukses diverifikasi via Midtrans (${payload.paymentType || 'ONLINE'})`,
+          diubahOleh: 'XENDIT_GATEWAY',
+          catatan: `Pembayaran sukses diverifikasi via Xendit (${payload.paymentType || 'ONLINE'})`,
         },
       };
     }
@@ -496,8 +500,8 @@ export async function upsertPayment(payload: {
           bookingId: current.id,
           statusLama: current.status,
           statusBaru: 'PAID',
-          diubahOleh: 'MIDTRANS_GATEWAY',
-          catatan: `Pembayaran sukses diverifikasi via Midtrans (${payload.paymentType || 'ONLINE'})`,
+          diubahOleh: 'XENDIT_GATEWAY',
+          catatan: `Pembayaran sukses diverifikasi via Xendit (${payload.paymentType || 'ONLINE'})`,
           createdAt: now.toISOString(),
         });
       }
