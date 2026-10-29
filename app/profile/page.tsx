@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -123,7 +123,7 @@ export default function ProfilePage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED' | 'UNPAID'>('ALL');
   const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRecord | null>(null);
 
-  // State Midtrans Payment Action
+  // State Payment Action
   const [paymentLoadingId, setPaymentLoadingId] = useState<string | null>(null);
 
   // 1. Cek Sesi Pengguna di LocalStorage
@@ -268,7 +268,7 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle Pembayaran Midtrans Snap
+  // Handle Pembayaran Xendit Invoice
   const handlePayBooking = async (booking: BookingRecord) => {
     try {
       setPaymentLoadingId(booking.id);
@@ -280,34 +280,17 @@ export default function ProfilePage() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(data.error || 'Gagal memproses pembayaran Midtrans.');
+        alert(data.error || 'Gagal memproses pembayaran invoice Xendit.');
         return;
       }
 
-      const { token, redirectUrl } = data.data;
+      const { redirectUrl, invoiceUrl } = data.data;
+      const targetUrl = redirectUrl || invoiceUrl;
 
-      // Jika Midtrans Snap JS tersedia di window, buka pop-up Snap, jika tidak buka redirectUrl
-      if (typeof window !== 'undefined' && (window as any).snap) {
-        (window as any).snap.pay(token, {
-          onSuccess: function (result: any) {
-            alert('Pembayaran berhasil! Status penitipan akan segera diperbarui.');
-            if (currentUser?.id) fetchProfileAndBookings(currentUser.id);
-          },
-          onPending: function (result: any) {
-            alert('Menunggu pembayaran Anda diselesaikan.');
-            if (currentUser?.id) fetchProfileAndBookings(currentUser.id);
-          },
-          onError: function (result: any) {
-            alert('Pembayaran gagal atau dibatalkan.');
-          },
-          onClose: function () {
-            if (currentUser?.id) fetchProfileAndBookings(currentUser.id);
-          },
-        });
-      } else if (redirectUrl) {
-        window.open(redirectUrl, '_blank');
+      if (targetUrl) {
+        window.open(targetUrl, '_blank');
       } else {
-        alert('Token pembayaran didapat: ' + token);
+        alert('URL pembayaran invoice Xendit tidak ditemukan.');
       }
     } catch (error: any) {
       alert('Terjadi kesalahan saat memproses pembayaran: ' + error.message);
@@ -603,7 +586,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div>
-                <div className="font-headline-sm text-headline-sm text-on-surface font-bold">Midtrans Gateway</div>
+                <div className="font-headline-sm text-headline-sm text-on-surface font-bold">Xendit Gateway</div>
                 <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-emerald-100 text-emerald-700 font-bold border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
                   Terhubung
@@ -1045,7 +1028,7 @@ export default function ProfilePage() {
                                     ) : (
                                       <span className="material-symbols-outlined text-[16px]">payment</span>
                                     )}
-                                    <span>Bayar via Midtrans</span>
+                                    <span>Bayar Sekarang (Xendit)</span>
                                   </button>
                                 )}
                               </div>
