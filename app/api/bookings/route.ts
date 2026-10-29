@@ -158,9 +158,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const bookings = await getAllBookings();
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId') || undefined;
+    const status = searchParams.get('status') || undefined;
+
+    const bookings = await getAllBookings({ userId, status });
     return NextResponse.json(bookings);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

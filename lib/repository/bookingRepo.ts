@@ -35,14 +35,24 @@ function writeLocalBookings(bookings: any[]) {
   }
 }
 
-export async function getAllBookings() {
+export async function getAllBookings(filters?: { userId?: string; status?: string }) {
   try {
+    const whereClause: any = {};
+    if (filters?.userId) {
+      whereClause.userId = filters.userId;
+    }
+    if (filters?.status) {
+      whereClause.status = filters.status;
+    }
+
     const bookings = await prisma.booking.findMany({
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       include: {
         user: true,
         items: true,
         quotation: true,
         conditionReport: true,
+        payment: true,
         statusLogs: { orderBy: { createdAt: 'desc' } },
       },
       orderBy: { createdAt: 'desc' },
@@ -51,7 +61,13 @@ export async function getAllBookings() {
   } catch (dbErr: any) {
     // Fallback gracefully ke file lokal jika database MongoDB offline
     console.warn('[Storage] Menggunakan fallback penyimpanan lokal JSON (MongoDB offline).');
-    const local = readLocalBookings();
+    let local = readLocalBookings();
+    if (filters?.userId) {
+      local = local.filter((b) => b.userId === filters.userId);
+    }
+    if (filters?.status) {
+      local = local.filter((b) => b.status === filters.status);
+    }
     return local.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 }
@@ -67,6 +83,7 @@ export async function getBookingById(id: string) {
         conditionReport: { include: { items: true } },
         weeklyUpdates: true,
         agreement: true,
+        payment: true,
         statusLogs: { orderBy: { createdAt: 'asc' } },
       },
     });
@@ -146,6 +163,7 @@ export async function createNewBooking(payload: {
         durasiBulan: payload.durasiBulan,
         totalHarga: payload.totalHarga,
         status: payload.status,
+        paymentStatus: 'UNPAID',
         tanggalPickup: new Date(payload.tanggalPickup),
         lokasiPickup: payload.lokasiPickup,
         metodePickup: payload.metodePickup || 'PICKUP',
@@ -188,6 +206,7 @@ export async function createNewBooking(payload: {
         user: true,
         items: true,
         quotation: true,
+        payment: true,
         statusLogs: true,
       },
     });
@@ -209,6 +228,8 @@ export async function createNewBooking(payload: {
       labelDurasi: payload.labelDurasi || `${payload.durasiBulan} Bulan`,
       totalHarga: payload.totalHarga,
       status: payload.status,
+      paymentStatus: 'UNPAID',
+      payment: null,
       tanggalPickup: new Date(payload.tanggalPickup).toISOString(),
       lokasiPickup: payload.lokasiPickup,
       metodePickup: payload.metodePickup || 'PICKUP',
@@ -323,3 +344,170 @@ export async function updateStatusBooking(id: string, statusBaru: string, catata
   writeLocalBookings(local);
   return current;
 }
+
+export async function getBookingByOrderId(orderId: string) {
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { orderId },
+      include: {
+        booking: {
+          include: {
+            user: true,
+            items: true,
+            quotation: true,
+            payment: true,
+          },
+        },
+      },
+    });
+
+    if (payment?.booking) {
+      return payment.booking;
+    }
+  } catch (dbErr: any) {
+    console.warn('[Storage] DB Offline - mencari orderId di local JSON.');
+  }
+
+  const local = readLocalBookings();
+  const found = local.find(
+    (b) => b.payment?.orderId === orderId || b.kodeBooking === orderId || b.id === orderId
+  );
+  return found || null;
+}
+
+export async function upsertPayment(payload: {
+  bookingId: string;
+  orderId: string;
+  amount: number;
+  status: string; // PENDING, SETTLEMENT, EXPIRE, CANCEL, DENY
+  snapToken?: string;
+  snapRedirectUrl?: string;
+  paymentType?: string;
+  transactionTime?: Date;
+  settlementTime?: Date;
+  rawResponse?: string;
+}) {
+  const now = new Date();
+  const paymentStatusMap: Record<string, string> = {
+    settlement: 'PAID',
+    capture: 'PAID',
+    pending: 'PENDING',
+    deny: 'FAILED',
+    expire: 'EXPIRED',
+    cancel: 'CANCELLED',
+  };
+
+  const bookingPaymentStatus = paymentStatusMap[payload.status.toLowerCase()] || payload.status;
+
+  try {
+    // 1. Simpan atau update payment di Prisma
+    const existingPayment = await prisma.payment.findUnique({
+      where: { bookingId: payload.bookingId },
+    });
+
+    let payment;
+    if (existingPayment) {
+      payment = await prisma.payment.update({
+        where: { id: existingPayment.id },
+        data: {
+          orderId: payload.orderId,
+          amount: payload.amount,
+          status: payload.status,
+          snapToken: payload.snapToken ?? existingPayment.snapToken,
+          snapRedirectUrl: payload.snapRedirectUrl ?? existingPayment.snapRedirectUrl,
+          paymentType: payload.paymentType ?? existingPayment.paymentType,
+          transactionTime: payload.transactionTime ?? existingPayment.transactionTime,
+          settlementTime: payload.settlementTime ?? existingPayment.settlementTime,
+          rawResponse: payload.rawResponse ?? existingPayment.rawResponse,
+        },
+      });
+    } else {
+      payment = await prisma.payment.create({
+        data: {
+          bookingId: payload.bookingId,
+          orderId: payload.orderId,
+          amount: payload.amount,
+          status: payload.status,
+          snapToken: payload.snapToken,
+          snapRedirectUrl: payload.snapRedirectUrl,
+          paymentType: payload.paymentType,
+          transactionTime: payload.transactionTime,
+          settlementTime: payload.settlementTime,
+          rawResponse: payload.rawResponse,
+        },
+      });
+    }
+
+    // 2. Update status pembayaran di Booking
+    const updateData: any = {
+      paymentStatus: bookingPaymentStatus,
+    };
+
+    // Jika pembayaran sukses, update juga status log booking
+    if (bookingPaymentStatus === 'PAID') {
+      updateData.statusLogs = {
+        create: {
+          statusBaru: 'PAID',
+          diubahOleh: 'MIDTRANS_GATEWAY',
+          catatan: `Pembayaran sukses diverifikasi via Midtrans (${payload.paymentType || 'ONLINE'})`,
+        },
+      };
+    }
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id: payload.bookingId },
+      data: updateData,
+      include: {
+        user: true,
+        items: true,
+        quotation: true,
+        payment: true,
+        statusLogs: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    return { payment, booking: updatedBooking };
+  } catch (dbErr: any) {
+    console.warn('[Storage] DB Offline - Upsert payment ke local JSON.');
+    const local = readLocalBookings();
+    const idx = local.findIndex((b) => b.id === payload.bookingId);
+    if (idx !== -1) {
+      const current = local[idx];
+      current.paymentStatus = bookingPaymentStatus;
+      current.payment = {
+        id: current.payment?.id || `pay_${Date.now()}`,
+        bookingId: payload.bookingId,
+        orderId: payload.orderId,
+        amount: payload.amount,
+        status: payload.status,
+        snapToken: payload.snapToken || current.payment?.snapToken,
+        snapRedirectUrl: payload.snapRedirectUrl || current.payment?.snapRedirectUrl,
+        paymentType: payload.paymentType || current.payment?.paymentType,
+        transactionTime: payload.transactionTime?.toISOString() || current.payment?.transactionTime,
+        settlementTime: payload.settlementTime?.toISOString() || current.payment?.settlementTime,
+        createdAt: current.payment?.createdAt || now.toISOString(),
+        updatedAt: now.toISOString(),
+      };
+
+      if (bookingPaymentStatus === 'PAID') {
+        if (!current.statusLogs) current.statusLogs = [];
+        current.statusLogs.push({
+          id: `sl_${Date.now()}`,
+          bookingId: current.id,
+          statusLama: current.status,
+          statusBaru: 'PAID',
+          diubahOleh: 'MIDTRANS_GATEWAY',
+          catatan: `Pembayaran sukses diverifikasi via Midtrans (${payload.paymentType || 'ONLINE'})`,
+          createdAt: now.toISOString(),
+        });
+      }
+
+      local[idx] = current;
+      writeLocalBookings(local);
+      return { payment: current.payment, booking: current };
+    }
+
+    return null;
+  }
+}
+
