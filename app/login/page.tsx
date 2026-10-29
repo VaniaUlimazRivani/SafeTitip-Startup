@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,65 +59,9 @@ export default function LoginPage() {
 
   const strength = getPasswordStrength(registerForm.password);
 
-  // Autentikasi Nyata Melalui Firebase Google Sign-In
-  const handleGoogleAuth = async () => {
-    setGoogleLoading(true);
-    setError('');
-
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      const userSession = {
-        role: 'USER',
-        nama: user.displayName || 'Pengguna Google',
-        email: user.email || '',
-        photoURL: user.photoURL || '',
-        noWa: user.phoneNumber || '',
-        alamat: 'Kota Padang, Sumatera Barat',
-        loginAt: new Date().toISOString(),
-        authProvider: 'google',
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('safetitip_user_session', JSON.stringify(userSession));
-
-        // Simpan juga ke daftar akun terdaftar lokal agar sinkron
-        const saved = localStorage.getItem('safetitip_registered_accounts');
-        const existingAccounts = saved ? JSON.parse(saved) : [];
-        if (!existingAccounts.some((acc: any) => acc.email?.toLowerCase() === user.email?.toLowerCase())) {
-          existingAccounts.push({
-            nama: userSession.nama,
-            email: userSession.email,
-            authProvider: 'google',
-            registeredAt: new Date().toISOString(),
-          });
-          localStorage.setItem('safetitip_registered_accounts', JSON.stringify(existingAccounts));
-        }
-      }
-
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/booking');
-      }, 700);
-    } catch (err: any) {
-      console.error('Firebase Google Sign-In Error:', err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Proses masuk dengan Google dibatalkan.');
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        setError('Permintaan login dibatalkan.');
-      } else if (err.code === 'auth/network-request-failed') {
-        setError('Koneksi internet bermasalah. Periksa jaringan Anda.');
-      } else if (err.code === 'auth/unauthorized-domain') {
-        setError('Domain localhost belum diizinkan di Firebase Console > Authentication > Settings > Authorized domains.');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setError('Metode login Google belum diaktifkan di Firebase Console > Authentication > Sign-in method.');
-      } else {
-        setError(err.message || 'Gagal masuk dengan Google. Silakan coba lagi.');
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
+  // Autentikasi Google SSO Kampus
+  const handleGoogleAuth = () => {
+    setError("Fitur masuk via Google SSO Kampus sedang dalam pemeliharaan sistem. Silakan masuk menggunakan Alamat Email dan Kata Sandi terdaftar Anda.");
   };
 
   // Submit Login Manual ke MongoDB Atlas
