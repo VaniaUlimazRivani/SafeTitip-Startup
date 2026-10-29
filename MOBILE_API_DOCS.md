@@ -195,24 +195,24 @@ Mengembalikan data lengkap booking meliputi:
 - `quotation`: rincian harga sewa
 - `conditionReport`: dokumentasi foto barang sebelum dan sesudah packing
 - `weeklyUpdates`: laporan mingguan kondisi barang di gudang
-- `payment`: status transaksi Midtrans
+- `payment`: status transaksi Xendit
 - `statusLogs`: timeline perubahan status penitipan
 
 ---
 
-## 5. Pembayaran dengan Midtrans
+## 5. Pembayaran dengan Xendit (Payment Gateway)
 
 Alur kerja pembayaran di Mobile:
 ```
 1. Mobile memanggil POST /api/payments/snap-token
    ↓
-2. Backend menghasilkan Snap Token & Redirect URL dari Midtrans
+2. Backend menghasilkan Snap Token & Redirect URL dari Xendit
    ↓
-3. Mobile membuka Snap via WebView atau Midtrans Mobile SDK
+3. Mobile membuka Snap via WebView atau Xendit Mobile SDK
    ↓
 4. Pengguna menyelesaikan pembayaran (QRIS / GoPay / Transfer Bank / ShopeePay)
    ↓
-5. Webhook Midtrans secara otomatis mengabari backend di /api/payments/notification
+5. Webhook Xendit secara otomatis mengabari backend di /api/payments/notification
    ↓
 6. Backend memverifikasi tanda tangan & mengubah paymentStatus menjadi PAID
    ↓
@@ -231,10 +231,10 @@ Alur kerja pembayaran di Mobile:
 ```json
 {
   "success": true,
-  "message": "Token pembayaran Midtrans berhasil dibuat.",
+  "message": "Invoice pembayaran Xendit berhasil dibuat.",
   "data": {
     "token": "d50c776e-e77c-473c-ba30-f4b93198eb5a",
-    "redirectUrl": "https://app.sandbox.midtrans.com/snap/v2/vtweb/d50c776e-e77c-473c-ba30-f4b93198eb5a",
+    "redirectUrl": "https://app.sandbox.xendit.com/snap/v2/vtweb/d50c776e-e77c-473c-ba30-f4b93198eb5a",
     "orderId": "ST-STP-98214-4512",
     "grossAmount": 150000,
     "bookingId": "671fb34098b...",
@@ -245,7 +245,7 @@ Alur kerja pembayaran di Mobile:
 
 > **Cara Implementasi di Mobile**:
 > - **Opsi 1 (Paling Mudah)**: Buka `redirectUrl` menggunakan paket `webview_flutter` atau `react-native-webview`. Saat URL selesai atau kembali ke callback, refresh halaman riwayat.
-> - **Opsi 2**: Gunakan Midtrans Mobile SDK (Android/iOS/Flutter) menggunakan `token`.
+> - **Opsi 2**: Gunakan Xendit Mobile SDK (Android/iOS/Flutter) menggunakan `token`.
 
 ---
 
@@ -272,21 +272,20 @@ Alur kerja pembayaran di Mobile:
 
 ---
 
-### C. Webhook Notifikasi Midtrans
+### C. Webhook Notifikasi Xendit
 * **Endpoint**: `POST /api/payments/notification`
-* **URL untuk didaftarkan di Midtrans Dashboard**:
+* **URL untuk didaftarkan di Xendit Dashboard**:
   `https://<your-domain>.vercel.app/api/payments/notification`
 * Backend memverifikasi SHA-512 signature otomatis dan memperbarui status booking menjadi `PAID` begitu dana diterima.
 
 ---
 
-## 6. Environment Variables Midtrans
+## 6. Environment Variables Xendit
 
 Tambahkan variabel berikut pada file `.env.local` dan di dashboard Environment Variables **Vercel**:
 ```env
-MIDTRANS_SERVER_KEY="SB-Mid-server-xxxxxxxxxxxx"
-MIDTRANS_CLIENT_KEY="SB-Mid-client-xxxxxxxxxxxx"
-MIDTRANS_IS_PRODUCTION="false"
-NEXT_PUBLIC_MIDTRANS_CLIENT_KEY="SB-Mid-client-xxxxxxxxxxxx"
+XENDIT_SECRET_KEY="xnd_development_xxxxxxxxxxxx"
+XENDIT_PUBLIC_KEY="xnd_public_development_xxxxxxxxxxxx"
+XENDIT_WEBHOOK_VERIFICATION_TOKEN="token_callback_xendit"
 ```
 *(Gunakan key Sandbox untuk tahap development dan uji coba).*

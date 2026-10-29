@@ -31,7 +31,7 @@
 
 ### 2. Catatan & Bug Tersisa (Non-P0)
 - **Otentikasi Admin:** Dashboard admin saat ini belum menggunakan otentikasi login/session JWT karena cakupan MVP disepakati open-demo. Di fase lanjutan perlu ditambahkan NextAuth / Clerk.
-- **Payment Gateway:** Biaya saat ini bersifat simulasi hipotetis (belum menerima transaksi uang nyata). Integrasi payment gateway (Midtrans / Xendit) direncanakan pada fase pilot rilis komersial.
+- **Payment Gateway:** Biaya saat ini bersifat simulasi hipotetis (belum menerima transaksi uang nyata). Integrasi payment gateway (Xendit / Xendit) direncanakan pada fase pilot rilis komersial.
 
 ---
 
