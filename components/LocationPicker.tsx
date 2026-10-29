@@ -19,9 +19,16 @@ export interface LocationPickerResult extends KalkulasiOngkirResult {
 }
 
 interface LocationPickerProps {
-  kategori: string;
-  onChangeOngkir: (result: LocationPickerResult) => void;
+  kategori?: string;
+  onChangeOngkir?: (result: LocationPickerResult) => void;
+  onChangeAlamat?: (alamat: string, result: LocationPickerResult) => void;
   initialAlamat?: string;
+  mode?: 'booking' | 'profile';
+  hideShippingMethods?: boolean;
+  mapTitle?: string;
+  mapSubtitle?: string;
+  detailLabel?: string;
+  detailPlaceholder?: string;
 }
 
 interface SearchPlaceItem {
@@ -35,10 +42,19 @@ interface SearchPlaceItem {
 }
 
 export default function LocationPicker({
-  kategori,
+  kategori = 'A',
   onChangeOngkir,
+  onChangeAlamat,
   initialAlamat = '',
+  mode = 'booking',
+  hideShippingMethods = false,
+  mapTitle,
+  mapSubtitle,
+  detailLabel,
+  detailPlaceholder,
 }: LocationPickerProps) {
+  // Mode flag
+  const isProfileMode = mode === 'profile' || hideShippingMethods;
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SearchPlaceItem[]>([]);
@@ -80,7 +96,7 @@ export default function LocationPicker({
     lng: KOSINAJA_WAREHOUSE.lng,
   });
 
-  const showMapSection = metodePickup === 'PICKUP' || metodeDelivery === 'DELIVERY';
+  const showMapSection = isProfileMode || metodePickup === 'PICKUP' || metodeDelivery === 'DELIVERY';
 
   // Kalkulasi Ongkir komprehensif
   const ongkirResult = kalkulasiOngkirLengkap(
@@ -103,20 +119,32 @@ export default function LocationPicker({
   const geocodeAbortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isUserEditedRef = useRef(false);
+  const prevInitialAlamatRef = useRef(initialAlamat);
 
   // Sinkronisasi data ke parent component
   useEffect(() => {
+    const isDefaultHub = selectedLoc.nama === KOSINAJA_WAREHOUSE.nama;
     const fullAlamat = alamatDetail
-      ? selectedLoc.nama && !alamatDetail.includes(selectedLoc.nama)
+      ? !isDefaultHub && !alamatDetail.includes(selectedLoc.nama)
         ? `[${selectedLoc.nama}] ${alamatDetail}`
         : alamatDetail
-      : selectedLoc.nama;
+      : !isDefaultHub
+      ? selectedLoc.nama
+      : '';
 
-    onChangeOngkir({
+    const payloadResult: LocationPickerResult = {
       ...ongkirResult,
       coordinate: { lat: selectedLoc.lat, lng: selectedLoc.lng },
       alamatDetail: fullAlamat,
-    });
+    };
+
+    if (onChangeOngkir) {
+      onChangeOngkir(payloadResult);
+    }
+    if (onChangeAlamat) {
+      onChangeAlamat(fullAlamat, payloadResult);
+    }
   }, [selectedLoc, kategori, metodePickup, metodeDelivery, alamatDetail, routeInfo]);
 
   // Klik di luar dropdown untuk menutup daftar
@@ -197,9 +225,53 @@ export default function LocationPicker({
     }
   }, []);
 
+  // Sinkronisasi initialAlamat jika data profil datang asinkron dari DB / API
+  useEffect(() => {
+    if (initialAlamat && (!isUserEditedRef.current || prevInitialAlamatRef.current !== initialAlamat)) {
+      prevInitialAlamatRef.current = initialAlamat;
+      const match = initialAlamat.match(/^\[(.*?)\]\s*(.*)$/);
+      if (match) {
+        const locName = match[1].trim();
+        const detail = match[2].trim();
+        setAlamatDetail(detail);
+
+        const matchedPreset = PRESET_LOKASI_PADANG.find(
+          (p) =>
+            p.nama.toLowerCase().includes(locName.toLowerCase()) ||
+            locName.toLowerCase().includes(p.nama.toLowerCase()) ||
+            locName.toLowerCase().includes(p.area.toLowerCase())
+        );
+
+        if (matchedPreset) {
+          setSelectedLoc({
+            nama: matchedPreset.nama,
+            alamatLengkap: matchedPreset.deskripsi,
+            lat: matchedPreset.lat,
+            lng: matchedPreset.lng,
+          });
+          if (destMarkerRef.current) {
+            destMarkerRef.current.setLatLng([matchedPreset.lat, matchedPreset.lng]);
+          }
+          if (leafletMapRef.current) {
+            leafletMapRef.current.setView([matchedPreset.lat, matchedPreset.lng], 14);
+          }
+          fetchRoadRoute(matchedPreset.lat, matchedPreset.lng);
+        } else {
+          setSelectedLoc((prev) => ({
+            ...prev,
+            nama: locName,
+          }));
+        }
+      } else {
+        setAlamatDetail(initialAlamat);
+      }
+    }
+  }, [initialAlamat, fetchRoadRoute]);
+
   // Handler Reverse Geocoding saat user klik peta / drag pin
   const handleCoordinatePicked = useCallback(
     async (lat: number, lng: number, shouldFetchReverse = true, customName?: string) => {
+      isUserEditedRef.current = true;
       // 1. Update marker posisi langsung di peta
       if (destMarkerRef.current) {
         destMarkerRef.current.setLatLng([lat, lng]);
@@ -434,6 +506,7 @@ export default function LocationPicker({
 
   // Saat hasil pencarian dipilih dari dropdown
   const handleSelectSuggestion = (item: SearchPlaceItem) => {
+    isUserEditedRef.current = true;
     setSelectedLoc({
       nama: item.nama,
       alamatLengkap: item.alamatLengkap,
@@ -528,140 +601,153 @@ export default function LocationPicker({
       <input type="hidden" name="jarakKm" value={ongkirResult.jarakKm} />
       <input type="hidden" name="totalOngkir" value={ongkirResult.totalOngkir} />
 
-      {/* Bagian 1: Pilihan Metode Penjemputan (Pickup) */}
-      <div className="space-y-3">
-        <label className="block text-xs font-black uppercase tracking-wider text-[#705E54]">
-          1. Metode Penjemputan Barang (Pickup) *
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setMetodePickup('PICKUP')}
-            className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
-              metodePickup === 'PICKUP'
-                ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
-                : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                metodePickup === 'PICKUP' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">local_shipping</span>
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-[#2A1B14]">Dijemput Kurir Kosinaja</p>
-              <p className="text-xs text-[#705E54] mt-0.5">
-                Kurir datang langsung ke pintu kamar kos / rumah Anda di Kota Padang.
-              </p>
-            </div>
-          </button>
+      {/* Bagian 1 & 2: Pilihan Metode Penjemputan & Pengantaran (Khusus Mode Booking) */}
+      {!isProfileMode && (
+        <>
+          {/* Bagian 1: Pilihan Metode Penjemputan (Pickup) */}
+          <div className="space-y-3">
+            <label className="block text-xs font-black uppercase tracking-wider text-[#705E54]">
+              1. Metode Penjemputan Barang (Pickup) *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMetodePickup('PICKUP')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  metodePickup === 'PICKUP'
+                    ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
+                    : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    metodePickup === 'PICKUP' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[22px]">local_shipping</span>
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-[#2A1B14]">Dijemput Kurir Kosinaja</p>
+                  <p className="text-xs text-[#705E54] mt-0.5">
+                    Kurir datang langsung ke pintu kamar kos / rumah Anda di Kota Padang.
+                  </p>
+                </div>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => setMetodePickup('SELF_DROPOFF')}
-            className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
-              metodePickup === 'SELF_DROPOFF'
-                ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
-                : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                metodePickup === 'SELF_DROPOFF' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">warehouse</span>
+              <button
+                type="button"
+                onClick={() => setMetodePickup('SELF_DROPOFF')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  metodePickup === 'SELF_DROPOFF'
+                    ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
+                    : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    metodePickup === 'SELF_DROPOFF' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[22px]">warehouse</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-extrabold text-[#2A1B14]">Antar Sendiri ke Gudang</p>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                      Gratis
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#705E54] mt-0.5">
+                    Anda mengantarkan barang sendiri ke Central Hub Kosinaja (Hotel Ibis Padang).
+                  </p>
+                </div>
+              </button>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-extrabold text-[#2A1B14]">Antar Sendiri ke Gudang</p>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
-                  Gratis
-                </span>
-              </div>
-              <p className="text-xs text-[#705E54] mt-0.5">
-                Anda mengantarkan barang sendiri ke Central Hub Kosinaja (Hotel Ibis Padang).
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
+          </div>
 
-      {/* Bagian 2: Pilihan Metode Pengantaran Kembali (Delivery) */}
-      <div className="space-y-3">
-        <label className="block text-xs font-black uppercase tracking-wider text-[#705E54]">
-          2. Metode Pengembalian Saat Selesai Titip *
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setMetodeDelivery('DELIVERY')}
-            className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
-              metodeDelivery === 'DELIVERY'
-                ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
-                : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                metodeDelivery === 'DELIVERY' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">front_hand</span>
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-[#2A1B14]">Diantar Kembali oleh Kurir</p>
-              <p className="text-xs text-[#705E54] mt-0.5">
-                Saat Anda kembali ke Padang, kurir mengantar barang ke kos baru Anda.
-              </p>
-            </div>
-          </button>
+          {/* Bagian 2: Pilihan Metode Pengantaran Kembali (Delivery) */}
+          <div className="space-y-3">
+            <label className="block text-xs font-black uppercase tracking-wider text-[#705E54]">
+              2. Metode Pengembalian Saat Selesai Titip *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMetodeDelivery('DELIVERY')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  metodeDelivery === 'DELIVERY'
+                    ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
+                    : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    metodeDelivery === 'DELIVERY' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[22px]">front_hand</span>
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-[#2A1B14]">Diantar Kembali oleh Kurir</p>
+                  <p className="text-xs text-[#705E54] mt-0.5">
+                    Saat Anda kembali ke Padang, kurir mengantar barang ke kos baru Anda.
+                  </p>
+                </div>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => setMetodeDelivery('SELF_PICKUP')}
-            className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
-              metodeDelivery === 'SELF_PICKUP'
-                ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
-                : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                metodeDelivery === 'SELF_PICKUP' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">directions_walk</span>
+              <button
+                type="button"
+                onClick={() => setMetodeDelivery('SELF_PICKUP')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
+                  metodeDelivery === 'SELF_PICKUP'
+                    ? 'border-[#B86B35] bg-[#F6ECE1] ring-2 ring-[#B86B35]/20 shadow-xs'
+                    : 'border-[#E8DDD3] bg-white hover:bg-[#FAF6F0]'
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    metodeDelivery === 'SELF_PICKUP' ? 'bg-[#B86B35] text-white shadow-xs' : 'bg-[#FAF6F0] text-[#705E54]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[22px]">directions_walk</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-extrabold text-[#2A1B14]">Ambil Sendiri di Gudang</p>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                      Gratis
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#705E54] mt-0.5">
+                    Anda mengambil langsung barang di Central Hub kami saat tiba kembali di Padang.
+                  </p>
+                </div>
+              </button>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-extrabold text-[#2A1B14]">Ambil Sendiri di Gudang</p>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
-                  Gratis
-                </span>
-              </div>
-              <p className="text-xs text-[#705E54] mt-0.5">
-                Anda mengambil langsung barang di Central Hub kami saat tiba kembali di Padang.
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
-      {/* Bagian 3: Interactive Map & Ongkir Rute Jalan Raya (Tampil jika Kurir Dipilih) */}
+      {/* Bagian 3: Interactive Map & Ongkir Rute Jalan Raya */}
       {showMapSection && (
         <div className="p-5 sm:p-6 rounded-3xl bg-[#FAF6F0] border border-[#E8DDD3] space-y-5 shadow-xs">
           {/* Header Map Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E8DDD3] pb-4">
             <div>
               <h3 className="text-sm font-black text-[#2A1B14] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#B86B35] text-[22px]">route</span>
-                Peta Penjemputan &amp; Rute Jalan Kurir
+                <span className="material-symbols-outlined text-[#B86B35] text-[22px]">
+                  {isProfileMode ? 'pin_drop' : 'route'}
+                </span>
+                <span>
+                  {mapTitle || (isProfileMode ? 'Peta Lokasi Kos & Titik Penjemputan' : 'Peta Penjemputan & Rute Jalan Kurir')}
+                </span>
               </h3>
               <p className="text-xs text-[#705E54] mt-0.5">
-                Pusat Gudang: <strong className="text-[#2A1B14]">{KOSINAJA_WAREHOUSE.nama}</strong> ({KOSINAJA_WAREHOUSE.alamat})
+                {mapSubtitle || (
+                  <>
+                    Pusat Gudang: <strong className="text-[#2A1B14]">{KOSINAJA_WAREHOUSE.nama}</strong> ({KOSINAJA_WAREHOUSE.alamat})
+                  </>
+                )}
               </p>
             </div>
             <button
@@ -901,91 +987,140 @@ export default function LocationPicker({
             <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-900 space-y-1.5 shadow-sm">
               <div className="flex items-center gap-2 font-extrabold text-sm text-rose-800">
                 <span className="material-symbols-outlined text-[20px]">error</span>
-                <span>Lokasi Berada di Luar Jangkauan Layanan Kurir</span>
+                <span>Lokasi Berada di Luar Jangkauan Layanan Kurir Kosinaja</span>
               </div>
               <p className="text-xs leading-relaxed text-rose-800">
-                Jarak lokasi penjemputan/pengantaran Anda ({ongkirResult.jarakKm} km) melebihi batas jangkauan maksimal kurir kami (Maksimal {ongkirResult.maxDistanceKm} km dari Central Hub Hotel Ibis).
+                Jarak lokasi {isProfileMode ? 'kos' : 'penjemputan/pengantaran'} Anda ({ongkirResult.jarakKm} km) melebihi batas jangkauan maksimal kurir kami (Maksimal {ongkirResult.maxDistanceKm} km dari Central Hub Hotel Ibis).
               </p>
               <p className="text-xs font-semibold text-rose-900 pt-1">
-                💡 <strong>Solusi:</strong> Anda tetap dapat menggunakan layanan penitipan Kosinaja dengan memilih metode <strong>Antar Sendiri ke Gudang (Gratis)</strong> di atas.
+                {isProfileMode ? (
+                  <>💡 Pastikan titik pin berada di area Kota Padang yang terjangkau oleh tim logistik kami.</>
+                ) : (
+                  <>💡 <strong>Solusi:</strong> Anda tetap dapat menggunakan layanan penitipan Kosinaja dengan memilih metode <strong>Antar Sendiri ke Gudang (Gratis)</strong> di atas.</>
+                )}
               </p>
             </div>
           )}
 
-          {/* Rincian Hasil Perhitungan Jarak & Tarif Resmi */}
-          <div className="p-4 rounded-2xl bg-white border border-[#EBD8C6] space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F6ECE1] pb-2.5">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-wider text-[#705E54]">
-                  Hasil Perhitungan Jarak Jalan &amp; Tarif Resmi:
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xl font-black text-[#2A1B14]">{ongkirResult.jarakKm} km</span>
-                  {ongkirResult.isFreePickup ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
-                      Gratis (&le; 1.0 km)
-                    </span>
-                  ) : (
+          {/* Rincian Hasil Perhitungan Jarak & Tarif */}
+          {isProfileMode ? (
+            <div className="p-4 rounded-2xl bg-white border border-[#EBD8C6] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F6ECE1] pb-2.5">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-[#705E54]">
+                    Informasi Jarak Rute ke Gudang Pusat (Hotel Ibis):
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xl font-black text-[#2A1B14]">{ongkirResult.jarakKm} km</span>
                     <span className="text-xs text-[#705E54]">
-                      rute jalan riil dari Hotel Ibis Padang
+                      • Est. ~{ongkirResult.estimasiWaktuMenit} menit waktu tempuh kurir
                     </span>
-                  )}
+                  </div>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="text-[11px] font-bold text-[#705E54]">Estimasi Tarif Jemput:</p>
+                  <p className="text-xl font-black text-[#B86B35]">
+                    {ongkirResult.isFreePickup ? 'Gratis (≤ 1.0 km)' : fmtRupiah(ongkirResult.ongkirPickup)}
+                  </p>
                 </div>
               </div>
-              <div className="text-left sm:text-right">
-                <p className="text-[11px] font-bold text-[#705E54]">Total Ongkir:</p>
-                <p className="text-xl font-black text-[#B86B35]">{fmtRupiah(ongkirResult.totalOngkir)}</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#705E54]">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
+                  <span>Status Layanan:</span>
+                  <strong className={ongkirResult.isOutOfRange ? 'text-rose-600' : 'text-emerald-700'}>
+                    {ongkirResult.isOutOfRange ? 'Di Luar Area Jangkauan' : 'Terjangkau Layanan Kurir Padang'}
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
+                  <span>Patokan Gudang:</span>
+                  <strong className="text-[#2A1B14]">Hotel Ibis Padang</strong>
+                </div>
               </div>
             </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-white border border-[#EBD8C6] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F6ECE1] pb-2.5">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-[#705E54]">
+                    Hasil Perhitungan Jarak Jalan &amp; Tarif Resmi:
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xl font-black text-[#2A1B14]">{ongkirResult.jarakKm} km</span>
+                    {ongkirResult.isFreePickup ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                        Gratis (&le; 1.0 km)
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[#705E54]">
+                        rute jalan riil dari Hotel Ibis Padang
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="text-[11px] font-bold text-[#705E54]">Total Ongkir:</p>
+                  <p className="text-xl font-black text-[#B86B35]">{fmtRupiah(ongkirResult.totalOngkir)}</p>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#705E54]">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
-                <span>Ongkir Penjemputan:</span>
-                <strong className="text-[#2A1B14]">
-                  {metodePickup === 'PICKUP'
-                    ? ongkirResult.ongkirPickup === 0
-                      ? 'Gratis'
-                      : fmtRupiah(ongkirResult.ongkirPickup)
-                    : 'Rp 0 (Antar Sendiri)'}
-                </strong>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#705E54]">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
+                  <span>Ongkir Penjemputan:</span>
+                  <strong className="text-[#2A1B14]">
+                    {metodePickup === 'PICKUP'
+                      ? ongkirResult.ongkirPickup === 0
+                        ? 'Gratis'
+                        : fmtRupiah(ongkirResult.ongkirPickup)
+                      : 'Rp 0 (Antar Sendiri)'}
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
+                  <span>Ongkir Pengantaran:</span>
+                  <strong className="text-[#2A1B14]">
+                    {metodeDelivery === 'DELIVERY'
+                      ? ongkirResult.ongkirDelivery === 0
+                        ? 'Gratis'
+                        : fmtRupiah(ongkirResult.ongkirDelivery)
+                      : 'Rp 0 (Ambil Sendiri)'}
+                  </strong>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF6F0]">
-                <span>Ongkir Pengantaran:</span>
-                <strong className="text-[#2A1B14]">
-                  {metodeDelivery === 'DELIVERY'
-                    ? ongkirResult.ongkirDelivery === 0
-                      ? 'Gratis'
-                      : fmtRupiah(ongkirResult.ongkirDelivery)
-                    : 'Rp 0 (Ambil Sendiri)'}
-                </strong>
-              </div>
+
+              {ongkirResult.surchargeKategori > 0 && (
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-amber-600">info</span>
+                  <span>
+                    Termasuk surcharge <strong>+{fmtRupiah(ongkirResult.surchargeKategori)}/trip</strong> untuk Paket Kategori {kategori}.
+                  </span>
+                </div>
+              )}
             </div>
-
-            {ongkirResult.surchargeKategori > 0 && (
-              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] text-amber-600">info</span>
-                <span>
-                  Termasuk surcharge <strong>+{fmtRupiah(ongkirResult.surchargeKategori)}/trip</strong> untuk Paket Kategori {kategori}.
-                </span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       )}
 
       {/* Bagian 4: Field Detail Alamat Tambahan */}
       <div className="space-y-1.5">
         <label className="block text-xs font-black uppercase tracking-wider text-[#705E54]" htmlFor="lokasiPickup">
-          Detail Alamat Spesifik / Nama Kos &amp; No. Kamar *
+          {detailLabel || (isProfileMode ? 'Detail Alamat Spesifik / Nama Kos & No. Kamar *' : 'Detail Alamat Spesifik / Nama Kos & No. Kamar *')}
         </label>
         <textarea
           id="lokasiPickup"
           name="lokasiPickup"
-          required
+          required={!isProfileMode}
           rows={2}
           value={alamatDetail}
-          onChange={(e) => setAlamatDetail(e.target.value)}
-          placeholder={`Misal: Kos Melati Putri No. 4, Kamar 12 Lantai 2, dekat ${selectedLoc.nama}...`}
+          onChange={(e) => {
+            isUserEditedRef.current = true;
+            setAlamatDetail(e.target.value);
+          }}
+          placeholder={
+            detailPlaceholder ||
+            (selectedLoc.nama !== KOSINAJA_WAREHOUSE.nama
+              ? `Misal: Kos Melati Putri No. 4, Kamar 12 Lantai 2, dekat ${selectedLoc.nama}...`
+              : 'Misal: Kos Melati No. 4, Jl. Moh. Hatta, Kamar 12 Lantai 2...')
+          }
           className="w-full p-3.5 rounded-2xl border border-[#E8DDD3] bg-white text-[#2A1B14] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B86B35]/30 resize-none font-medium placeholder:text-[#8C7A6D]"
         />
         <p className="text-[11px] text-[#8C7A6D]">
